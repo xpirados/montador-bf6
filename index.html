@@ -1,0 +1,821 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><style>body{margin:0}</style><!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Montador M4A1</title>
+<style>
+:root{--fundo:#0d2329;--borda:#ffffff26;--cartao:#0c1a20e6;--texto:#e6edef;--apagado:#8fa3a9;--bom:#6fdc6a;--ruim:#ff6a55}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#071317;color:var(--texto);font-family:Bahnschrift,'Segoe UI',sans-serif}
+body{display:flex;align-items:center;justify-content:center;overflow:hidden}
+#palco{position:relative;width:min(100vw,177.78vh);aspect-ratio:16/9;container-type:size;overflow:hidden;
+ background:radial-gradient(ellipse at 55% 40%,#2c5a66 0%,#16363f 45%,var(--fundo) 100%)}
+#linhas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#linhas line{stroke:#ffffff40;stroke-width:1}
+#arma{position:absolute;cursor:grab}
+#arma:active{cursor:grabbing}
+#inspecionar,#reset{position:absolute;left:3.4cqw;bottom:1.6cqw;padding:.5cqw 1cqw;background:#10181cb0;border:1px solid #ffffff50;color:var(--texto);font:inherit;font-size:1.4cqw;cursor:pointer}
+#reset{left:14cqw}
+#inspecionar:hover,#reset:hover{border-color:#fff}
+#inspecionar kbd,#reset kbd{font:inherit;background:#ffffffd0;color:#0d2329;padding:0 .35cqw;margin-right:.5cqw}
+#dica{position:absolute;left:0;right:0;bottom:2cqw;text-align:center;font-size:1.4cqw;color:#cfd8db;display:none;pointer-events:none}
+#palco.inspecao #dica{display:block}
+#palco.inspecao :is(#linhas,#pecas,#painel,#pontos,#aviso,#grade,#detalhe,#inspecionar,#reset){display:none!important}
+#voltar{position:absolute;left:1.2cqw;top:1.1cqw;background:none;border:0;color:var(--texto);font:inherit;font-size:2cqw;cursor:pointer;visibility:hidden}
+h1{position:absolute;left:4cqw;top:1.1cqw;margin:0;font-weight:400;font-size:2cqw;letter-spacing:.06em}
+#pontos{position:absolute;left:3.4cqw;top:6.4cqw;display:flex;align-items:center;gap:.8cqw;font-size:1.8cqw}
+#pips{display:flex;gap:.25cqw}
+#pips i{display:block;width:1.05cqw;height:1.05cqw;background:#ffffff26;transform:skewX(-12deg)}
+#pips i.cheio{background:#e8eef0}
+#aviso{position:absolute;left:3.4cqw;top:9.4cqw;font-size:1.5cqw;color:var(--ruim);min-height:2cqw}
+.peca{position:absolute;transform:translate(-50%,-50%);width:9cqw;height:6.5cqw;padding:.5cqw .6cqw;background:var(--cartao);border:1px solid var(--borda);color:var(--texto);font:inherit;text-align:left;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between}
+.peca:hover{border:2px solid #fff}
+.peca .custo{position:absolute;left:.5cqw;top:.35cqw;font-size:1.25cqw;color:#cfd8db}
+.peca .nome{font-size:1.15cqw;line-height:1.08}
+.icone{flex:1;min-height:0;width:100%;object-fit:contain;opacity:.95;pointer-events:none}
+.vazia{width:auto;height:auto;background:none;border:0;padding:0;align-items:center;gap:.3cqw}
+.vazia:hover{border:0}
+.vazia b{display:flex;align-items:center;justify-content:center;width:2.4cqw;height:2.4cqw;background:#ffffff26;font-size:1.9cqw;font-weight:400}
+.vazia:hover b{background:#fff;color:#0d2329}
+.vazia span{font-size:1.05cqw;color:#cfd8db;white-space:nowrap}
+#painel{position:absolute;left:69.5%;top:52.5%;width:25%;height:38.5%;padding:.7cqw 1.2cqw;background:#10181cf2;font-size:1.15cqw}
+#topo{display:flex;gap:2cqw;padding-bottom:.4cqw;border-bottom:1px dashed #ffffff40;margin-bottom:.3cqw}
+#topo small{display:block;font-size:.95cqw;color:var(--apagado)}
+#topo strong{font-size:2.1cqw;font-weight:400;line-height:1}
+.lin{display:flex;justify-content:space-between;padding:.14cqw 0}
+.lin span{color:#c5d0d3}
+.lin.melhor b{color:var(--bom)}.lin.pior b{color:var(--ruim)}
+.lin b{font-weight:400}
+.lin.extra{display:none}
+#painel.expandido{top:19.4%;height:75%;left:68.75%;width:26%;padding:1cqw 1.3cqw;font-size:1.2cqw}
+#painel.expandido .lin{padding:.18cqw 0;font-size:1.05cqw}
+.barra{position:relative;display:flex;justify-content:space-between;font-size:.95cqw;padding:.16cqw 0 .5cqw;margin-bottom:.12cqw}
+.barra b{font-weight:400}.barra i{position:absolute;left:0;right:0;bottom:.17cqw;height:.16cqw;background:#ffffff24}.barra i::before{content:'';display:block;width:var(--nota);height:100%;background:#c6d5d8}.barra.desconhecida{padding-bottom:.18cqw}
+#painel.expandido .lin.extra{display:flex}
+#painel.expandido #topo strong{font-size:2.5cqw}
+#botaoC{position:absolute;right:-1.6cqw;bottom:1cqw;width:1.5cqw;height:1.7cqw;padding:0;background:#ffffff30;border:0;color:var(--texto);font:inherit;font-size:1.1cqw;cursor:pointer}
+#botaoC:hover{background:#fff;color:#0d2329}
+#carregando{position:absolute;left:0;right:0;top:45%;text-align:center;font-size:1.6cqw;color:#cfd8db}
+#detalhe{position:absolute;left:3.6cqw;top:17.5cqw;width:30cqw;display:none;padding:.7cqw 1.2cqw;border-left:1px solid #ffffff50;background:#0d2329d9}
+#detalhe h2{margin:0 0 .4cqw;font-size:3cqw;font-weight:400;line-height:1.05;text-transform:uppercase}
+#detalhe p{margin:0 0 .7cqw;font-size:1.3cqw;line-height:1.25;color:#dbe3e5;min-height:1.6cqw}
+#estado{display:inline-block;padding:.35cqw .9cqw;font-size:1.25cqw;border:1px solid #ffffff50;background:#10181cb0}
+#estado.montada{border-color:#6fdc6a;color:#a6e8a2;background:#2f6f2b80}
+#grade{position:absolute;left:3.6cqw;top:36.4cqw;width:57cqw;height:17.2cqw;display:none;grid-template-columns:repeat(6,8.6cqw);grid-auto-rows:7.4cqw;gap:.8cqw;overflow-y:auto;scrollbar-color:#ffffffa0 transparent;scrollbar-width:thin}
+.opcao{position:relative;padding:.45cqw .6cqw;background:var(--cartao);border:1px solid var(--borda);color:var(--texto);font:inherit;text-align:left;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between}
+.opcao:hover,.opcao:focus-visible{border:2px solid #fff;outline:0}
+.opcao .custo{position:absolute;left:.5cqw;top:.3cqw;font-size:1.2cqw;color:#cfd8db}
+.opcao .nome{font-size:1.05cqw;line-height:1.05;margin-top:auto}
+.opcao.montada{border:2px solid #fff}
+.opcao.montada::after{content:"✓";position:absolute;right:.4cqw;top:.4cqw;width:1.7cqw;height:1.7cqw;background:#4fa84a;color:#fff;font-size:1.2cqw;display:flex;align-items:center;justify-content:center}
+.opcao.cara{opacity:.4}
+.simbolo-default{display:inline-grid;place-items:center;width:.95cqw;height:.95cqw;border:1px solid currentColor;vertical-align:middle}
+.simbolo-default::before{content:'';width:.26cqw;height:.26cqw;background:currentColor}
+.marca-fabrica{position:absolute;right:.45cqw;top:.4cqw;line-height:1;color:#dbe5e8}
+.opcao.montada::after{top:2cqw}
+#defaultDetalhe{display:none;margin:.35cqw 0 .65cqw;padding:.15cqw .6cqw;border-left:1px solid #cfd8db;width:fit-content;font-size:1.15cqw;background:#10181c80}
+#nomeMontagem{position:absolute;left:3.4cqw;top:9.4cqw;font-size:3cqw;line-height:1;display:none}
+#palco.inspecao :is(#nomeMontagem,#seletorArma){display:none!important}
+#seletorArma{position:absolute;left:3.4cqw;top:3.5cqw;z-index:3;max-width:24cqw;background:#102932;color:#e4ecee;border:1px solid #ffffff50;padding:.25cqw;font:inherit;font-size:1.1cqw}</style></head><body>
+<div id="palco">
+ <svg id="linhas" viewBox="0 0 2000 1125" preserveAspectRatio="none"></svg>
+ <canvas id="arma" width="2000" height="1125" aria-label="Modelo 3D da M4A1; arraste para girar"></canvas>
+ <button id="voltar" aria-label="Voltar">‹</button>
+ <select id="seletorArma" aria-label="Arma"></select><h1 id="titulo"></h1>
+ <div id="pontos"><span id="total"></span><span id="pips"></span></div>
+ <div id="aviso" role="status"></div>
+ <div id="nomeMontagem">FACTORY</div>
+ <div id="pecas"></div>
+ <div id="detalhe"><h2 id="dnome"></h2><div id="defaultDetalhe"><i class="simbolo-default" aria-hidden="true"></i> Default</div><p id="dtexto"></p><span id="estado"></span></div>
+ <div id="grade"></div>
+ <div id="painel"><div id="topo"></div><div id="linhasPainel"></div><button id="botaoC" aria-label="Expandir ou reduzir os dados" title="Expandir ou reduzir (tecla C)">C</button></div>
+ <div id="carregando">Carregando a arma…</div>
+ <button id="inspecionar"><kbd>I</kbd>INSPECT</button>
+ <button id="reset"><kbd>X</kbd>RESET</button>
+ <div id="dica">Arraste para girar · Roda do mouse para aproximar</div>
+</div>
+<script>const ARS21_T={},ARS21_M={},ARS21_SKINS={};const ARS28_CATALOG={"assaultrifle/6p67":"arma-catalog-ae119ac441198c170c32f9ea9fb900b5a02bef04d762451416975c02cbf90ae5.js","boltaction/m2010esr":"arma-catalog-416eeef29a05b890817e06ab8f2f57f1557fd6f8897aa96120a92a5e94499695.js","carbine/m4a1":"arma-catalog-a134c4c1e908197fe82d50b9561832ba879d63d7e3c0135828c0f30a503da649.js","dmr/aradmr":"arma-catalog-659ee02592c87e0c1a297e264fbb41a477b7917211e4f639419a262f5177b460.js","mg/m240l":"arma-catalog-4ebefb4503a448457f0d2ffce15fb07c9a8e91dd6fa8461a8a818b8a851e1913.js","secondary/fiveseven":"arma-catalog-cb5b622572a1653cf112f89fb49aa67bc16d72daf6c88285bc65a2d11f56ecb7.js","shotgun/185ksk":"arma-catalog-d51fffc5a5d042cbd62134288d6fd078e8b6f0885fbbf0223971679e65d8b8c7.js","smg/apc10":"arma-catalog-6b0c72c9deb72aff715800ee98e3ea2be24d2a1b553f179805b4ad1050e89858.js","assaultrifle/ace32":"arma-catalog-a4c430be838e9824bb762cb80f459298b80cab9288a9340ad06209ae12e60822.js","assaultrifle/ef88":"arma-catalog-cb684bbc5a68458448d7edc425cf84de60de761f3d1aae864dcb0e0ae536ab79.js","assaultrifle/g36":"arma-catalog-05ba101f2ea4e7dcad7ef9a46a374108e98174fba34a4c2179243399d13e0ffb.js","assaultrifle/g3a4":"arma-catalog-e0e01830368579e7f63a902cb6f120b4571cf69c0fc9f5e725dd9bdf0b1e65db.js","assaultrifle/hk433":"arma-catalog-8da9939ce23b1dc638849127fb92767c4020757756d8f9546bb4e24d2919c822.js","assaultrifle/l85a3":"arma-catalog-f4f55f45d93a509db12e10872c3c6987f1c332f026de19479e9e4dfbc82282c9.js","assaultrifle/mrgga":"arma-catalog-f08743be232ef247c709ebe98bfacbf578434a326cdafc2d405ecc8eea24c863.js","assaultrifle/scarl":"arma-catalog-d5acbaca83fcdcbe9978ee697e2868a03e6a9d3d17a8fade199a691c21ce147c.js","assaultrifle/tavor7":"arma-catalog-e78857b9bd92e2a78fff68180482df56d7d9bd73daf798e14bdb4bf7bcb559fe.js","assaultrifle/vhs2":"arma-catalog-e174de872ba087ff4e263a13d449c598d53ed31a95ce9da54d0a3c5fb5df28a4.js","boltaction/mrad":"arma-catalog-3467a2f8f0d0a79a37b4f78bb8efc40d4480ae494232172368f5c51d4411cef9.js","boltaction/sv98m":"arma-catalog-cd1d9492ecdf0f8a111018bb921a08122ca8eb9bac4244514f257ad6909245aa.js","carbine/ak205":"arma-catalog-053769e5f05b778fe548c84c00ef285954e426ebd91cc9977fd431e5fc43c8e1.js","carbine/bren3":"arma-catalog-2ceffb5bedcd2eefb82b97b2ad7ff50256f804df101e489772632ce18cfe4a90.js","carbine/hk417a2":"arma-catalog-5f923fc852a9d0f292a3f7c76eb9b7e258e9be188164914c44a72f15b20c6e23.js","carbine/msbsgrotb":"arma-catalog-b97aad7f2a4a9d575b3ab332085cb66d2c16b9464dfd1a168eb7f708f6e9927d.js","carbine/qbz192":"arma-catalog-1edbd891bc14502bfef3e58a1244cd6df93e28f4c60cca161cb2c3d8b2542718.js","carbine/scarsc":"arma-catalog-2192084a469004f0b9b2017bedb597c79e19ff8cbff23067ddcf1b089c444a2e.js","carbine/sig553r":"arma-catalog-ee72bad723d845e01f4a525d76aa0aef2b75e5195bcbb7113eba3be83d784316.js","carbine/xm7":"arma-catalog-feb82e4703ac2c339c36c26b709c026626bdd20446b9ba3454e9181bdde16d4a.js","dmr/m39emr":"arma-catalog-1865f857a2e792861a1d9f47e96dddda927c2f43b3c303f7642635d862ad5780.js","dmr/msbsgrotcps":"arma-catalog-2439310d37af3e27dd0039837de6b76dbdbe2282fa221278f53f14528f5c2d6b.js","dmr/svch":"arma-catalog-4c499e3a82813cc943c2f60e4d2a3a431cb074ec0eb8461c9edae4a7a8d60bf4.js","dmr/svdm":"arma-catalog-e680c074557e2434f0f99e398f450980797b46b3e904ad263ddbe321d1806c53.js","dmr/vssm":"arma-catalog-94852708c7ddd70ee37c1a886e3c7a2b6294bfbeeba7e41e0d3f79518607ca61.js","mg/m250":"arma-catalog-e7ed824fd0af11b06541fb5825523245f4bb48ab74df13a5958d7bccca36611a.js","mg/m60e6":"arma-catalog-9c42da0f94af5017b55b0c0ab1b87b72b7abac90993d34836fcf3f333afabd31.js","mg/mg4k":"arma-catalog-092185cf9c31415bba2a062b5f9c5abbd8a9f831b6e2eb90f7b706e74a8f8e85.js","mg/mg5":"arma-catalog-e37693c0f4be66609cab6cd7871b8032b3ad6c6ac5d6ab1bf3e15a3f451398cf.js","mg/minimi":"arma-catalog-356f46a3109c0e1f977f1596ac2372949c844099e135db94ce39460c0f226db5.js","mg/pkm":"arma-catalog-e4457fe542a7dfbb8143245b69051c4623df37503a165f3f551ad057aa54dbde.js","mg/rpk74m":"arma-catalog-54e7236ca0fa2707285979d57d7c44239b18af3f06d23b36910ee16eda16651e.js","mg/rpkm":"arma-catalog-4efe6bc69fff2e0e8fdcf1fe4af3e475acb55cf8b6b6477598135adcf606d96d.js","mg/ultimax":"arma-catalog-402c3333905749600904ba0135b073bd23f33b2a112c31f20ba3030772eebcfc.js","secondary/g22":"arma-catalog-0a109bd0143641e5b62d9a54c1a5e93f948b81e989359e157b9bd9ec769334a6.js","secondary/m18":"arma-catalog-e9dd2269e003e85b393b24d64a3a3d5ec759dec72ed2637391068f94a3932d9e.js","secondary/raginghunter":"arma-catalog-af2087e632c69c32fe7a49f2f6fefab883932b1bc85edcbe8023b51a1cdc267b.js","secondary/skorpion":"arma-catalog-12437dc177ad288764b5403288272ec611343203d91e79f523328ab8a6882e0f.js","shotgun/dp12":"arma-catalog-ca18d7a8326c6f906b063fc81db5c5afc268ef5c2d52de97412038f53355009e.js","shotgun/m1014":"arma-catalog-33e719f45c078884b629566690dca9070b7cbd3c0b5ae91d3c6b6703357d6c91.js","smg/apdw":"arma-catalog-c5d6fbd69d9a42accd70d5ade21416840e6b4f2526ac9b3fbcfbd0e761d8f78f.js","smg/mp5mli":"arma-catalog-05cdec4ae7128a5fc663ffaa2ed7ebf8c7f10f1e638799870fe4744ef14d911d.js","smg/mp7a2":"arma-catalog-9b4323b87cf3f259ba9e973cf26b7996023499857d3f8a853ab77934abd43fbd.js","smg/mpx":"arma-catalog-c588c7d22a7794b5fead1966a9525adb75d2455329dcbe0ea3d7f31a2064fd44.js","smg/p90":"arma-catalog-3e20e19b352a36705bdc2747711fbfb4ea9f7de3d271ee3f59fac71583b70bd3.js","smg/pp19":"arma-catalog-047737928054eb4f688b12b01bbd8fa15edbe9136acf1eee2d901b16890e16a6.js","smg/rsar999":"arma-catalog-b95197f62353801f6d8ae0b163c4dcaca989d8f9ba157c40226326b83aa963d9.js","smg/ump40":"arma-catalog-daf615c2c2858be5a070c3c12809242ae08f8a7bae3c999aa3487f9a2819a5e3.js","smg/vector":"arma-catalog-2151f841fca127d145eefc6a2adc4a0f4ce3127df9e8ade67536a9a8be529707.js"};
+/* Skins locais: dados referidos pelo jogo, sem recoloração inferida. */
+const ArmaSkins21=(()=>{
+ let weapon,models,config,textures,skins=[],original={},keys={},active=null,preview=null,previewing=false,epoch=0,opened=false,previousTitle='',originalFragments={},lastIds=[];
+ const loaded=new Map(),deferredModels=new Map();
+ const eligible=s=>s.available&&s.family==='weaponpackage'&&s.nameProof?.literal===s.name;
+ function validate(s){
+  if(s.weapon!==weapon)throw Error('Pacote ligado a outra arma');
+  if(s.name!==s.expectedName)throw Error('Nome do pacote divergente da fonte');
+  if(!s.nameProof||s.nameProof.literal!==s.name)throw Error('Nome do pacote sem prova de localização');
+  if(s.family!=='weaponpackage')throw Error('Família do pacote divergente');
+  if(!s.available)throw Error('Pacote incompleto');
+  if(!Object.keys(s.assignments||{}).length)throw Error('Pacote sem material');
+ }
+ async function script(file,kind){
+  if(!(new RegExp('^arma-'+kind+'-[a-f0-9]{64}\\.js$')).test(file))throw Error('Arquivo de pacote inválido');
+  await new Promise((resolve,reject)=>{const el=document.createElement('script');el.src='modelos/skins21/'+file;el.onload=()=>{el.remove();resolve();};el.onerror=()=>{el.remove();reject(Error('Não consegui carregar este pacote.'));};document.head.append(el);});
+ }
+ async function prepare(w,m,c,t){
+  weapon=w;models=m;config=c;textures=t;
+  if(!ARS21_SKINS[w]&&ARS28_CATALOG[w])await script(ARS28_CATALOG[w],'catalog');
+  skins=ARS21_SKINS[w]||[];
+  originalFragments={...c.fragments};bind(m);
+  // O renderer original constrói buffers uma vez. Cada placeholder captura a
+  // própria função original de registro e conserva o array que ele usará.
+  // A malha real e os buffers só existem após escolher o pacote; shader,
+  // câmera e implementação do renderer permanecem os mesmos.
+  for(const s of skins.filter(eligible))for(const mid of s.modelIds||[]){
+   if(m[mid])continue;
+   const deferred={buffers:[],register:null};deferredModels.set(mid,deferred);
+   m[mid]={sections:{map(register){deferred.register=register;return deferred.buffers;}}};
+  }
+ }
+ function bind(m){
+  // Cada seção ganha IDs próprios. A textura do corpo não invade cartucho/lente
+  // nem outra seção que antes reutilizava a mesma URL.
+  for(const [mid,model] of Object.entries(m)){
+   m[mid]={...model,sections:model.sections.map((section,i)=>{
+    const s={...section},key=mid+'|'+s.name,binding={};
+    for(const role of ['texture','nmt','smooth']){
+     if(!s[role])continue;const id='ars21|'+mid+'|'+i+'|'+role;
+     original[id]=textures[s[role]];textures[id]=textures[s[role]];s[role]=id;binding[role]=id;
+    }
+    (keys[key]??=[]).push(binding);return s;
+   })};
+  }
+ }
+ function load(s){
+  if(!s)return Promise.resolve();validate(s);
+  if(!loaded.has(s.id))loaded.set(s.id,(async()=>{
+   for(const file of s.modelAssets||[])await script(file,'model');
+   const added=Object.fromEntries(Object.entries(ARS21_M).filter(([mid])=>!models[mid]||deferredModels.has(mid)));
+   bind(added);Object.assign(models,added);
+   for(const [mid,model] of Object.entries(added)){
+    const deferred=deferredModels.get(mid);
+    if(!deferred?.register)throw Error('Malha própria sem registro diferido: '+mid);
+    deferred.buffers.push(...model.sections.map(deferred.register));deferredModels.delete(mid);
+   }
+   for(const file of s.assets){
+    await script(file,'skin');
+   }
+   for(const roles of Object.values(s.assignments))for(const id of Object.values(roles))if(!ARS21_T[id])throw Error('Mapa do pacote ausente');
+  })().catch(e=>{loaded.delete(s.id);throw e;}));
+  return loaded.get(s.id);
+ }
+ async function apply(id,isPreview=false){
+  const token=++epoch,s=id?skins.find(s=>s.id===id):null;
+  if(id&&!s)throw Error('Pacote desconhecido');
+  await load(s);if(token!==epoch)return false;
+  Object.assign(textures,original);
+  Object.assign(config.fragments,originalFragments);
+  if(s)for(const [asset,value] of Object.entries(s.fragmentOverrides||{}))config.fragments[asset]=value;
+  if(s)for(const [key,roles] of Object.entries(s.assignments))for(const [role,image] of Object.entries(roles)){
+   for(const binding of keys[key]||[]){const target=binding[role];if(target)textures[target]=ARS21_T[image];}
+  }
+  if(isPreview){preview=id;previewing=true;}else{active=id;preview=null;previewing=false;}
+  window.renderer.assemble(lastIds);paint();return true;
+ }
+ function close(){opened=false;document.getElementById('titulo').textContent=previousTitle;document.getElementById('palco').classList.remove('camos21');if(previewing)apply(active).catch(error);preview=null;previewing=false;document.getElementById('camos21').focus();}
+ function error(e){document.getElementById('camosEstado21').textContent=e.message;}
+ function paint(){
+  const selected=skins.find(s=>s.id===active),shown=skins.find(s=>s.id===(previewing?preview:active));
+  document.getElementById('camoNome21').textContent=selected?.name||'Factory';
+  document.getElementById('camosNome21').textContent=shown?.name||'Factory';
+  document.getElementById('camosEstado21').textContent=previewing&&preview!==active?'EQUIP':'✓ Equipped';
+  for(const b of document.querySelectorAll('#gradeCamos21 button'))b.classList.toggle('montada',(b.dataset.skin||null)===active);
+ }
+ function mount(){
+  const style=document.createElement('style');style.textContent=`
+   #camos21{position:absolute;left:3.4cqw;bottom:5.5cqw;width:10cqw;height:6.5cqw;padding:.5cqw .6cqw;background:var(--cartao);border:1px solid var(--borda);color:var(--texto);font:inherit;text-align:left;cursor:pointer;display:flex;flex-direction:column;justify-content:flex-end;font-size:1.1cqw}
+   #camos21 span{color:var(--apagado);margin-top:.2cqw}
+   #camoNome21,#camosNome21{overflow-wrap:anywhere}
+   #camos21:hover,#camos21:focus-visible{border-color:#fff;outline:1px solid #fff}
+   #palco.inspecao #camos21,#palco.inspecao #selecaoCamos21{display:none}
+   #palco:has(#grade[style*="grid"]) #camos21{display:none}
+   #selecaoCamos21{display:none}#palco.camos21 #selecaoCamos21{display:block}
+   #palco.camos21 :is(#linhas,#pecas,#nomeMontagem,#inspecionar,#reset,#camos21,#detalhe,#grade){display:none!important}
+   #camosTopo21{position:absolute;left:3.6cqw;top:17.5cqw;width:30cqw;padding:.7cqw 1.2cqw;border-left:1px solid #ffffff50;background:#0d2329d9}
+   #camosNome21{margin:0 0 .7cqw;font-size:3cqw;font-weight:400;line-height:1.05}
+   #camosEstado21{font-size:1.25cqw}
+   #gradeCamos21{position:absolute;left:3.6cqw;top:36.4cqw;width:57cqw;height:17.2cqw;display:grid;grid-template-columns:repeat(6,8.6cqw);grid-auto-rows:7.4cqw;gap:.8cqw;overflow-y:auto;scrollbar-color:#ffffffa0 transparent;scrollbar-width:thin}
+   .opcao-camo21{position:relative;padding:.45cqw .6cqw;background:var(--cartao);border:1px solid var(--borda);color:var(--texto);font:inherit;text-align:left;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between}
+   .opcao-camo21:hover,.opcao-camo21:focus-visible{border:2px solid #fff;outline:0}
+   .opcao-camo21 .nome{font-size:1.05cqw;line-height:1.05;margin-top:auto;overflow-wrap:anywhere}
+   .opcao-camo21.montada{border:2px solid #fff}
+   .opcao-camo21.montada::after{content:'✓';position:absolute;right:.4cqw;top:.4cqw;width:1.7cqw;height:1.7cqw;background:#4fa84a;color:#fff;font-size:1.2cqw;display:grid;place-items:center}
+   #gradeCamos21 button:disabled{opacity:.45;cursor:default}#voltarCamos21{position:absolute;left:1.2cqw;top:1.1cqw;background:var(--fundo);border:0;color:var(--texto);font:inherit;font-size:2cqw;cursor:pointer}
+  `;document.head.append(style);
+  const button=document.createElement('button');button.id='camos21';button.setAttribute('aria-expanded','false');button.setAttribute('aria-controls','selecaoCamos21');button.innerHTML='<b>WEAPON PACKAGE /</b><span id="camoNome21">Factory</span>';
+  const panel=document.createElement('div');panel.id='selecaoCamos21';panel.innerHTML='<button id="voltarCamos21" aria-label="Voltar da Weapon Package">‹</button><div id="camosTopo21"><h2 id="camosNome21">Factory</h2><span id="camosEstado21" role="status">✓ EQUIPPED</span></div><div id="gradeCamos21" role="group" aria-label="Weapon Package"></div>';
+  document.getElementById('palco').append(button,panel);
+  const grid=document.getElementById('gradeCamos21');
+  for(const s of [null,...skins.filter(eligible)]){
+   const b=document.createElement('button');b.className='opcao-camo21';b.dataset.skin=s?.id||'';b.disabled=!!s&&!s.available;
+   if(s?.iconData){const image=document.createElement('img');image.className='icone';image.src=s.iconData;image.alt='';b.append(image);}
+   const name=document.createElement('span');name.className='nome';name.textContent=s?.name||'Factory';b.append(name);
+   b.onclick=()=>apply(s?.id||null).catch(error);
+   b.onmouseenter=b.onfocus=()=>{if(!b.disabled)apply(s?.id||null,true).catch(error);};
+   b.onmouseleave=b.onblur=()=>{if(!b.disabled)apply(active).catch(error);};grid.append(b);
+  }
+  button.onclick=()=>{opened=true;previousTitle=document.getElementById('titulo').textContent;document.getElementById('titulo').textContent='WEAPON PACKAGE';button.setAttribute('aria-expanded','true');document.getElementById('palco').classList.add('camos21');paint();grid.querySelector('button').focus();};
+  document.getElementById('voltarCamos21').onclick=()=>{button.setAttribute('aria-expanded','false');close();};
+  document.addEventListener('keydown',e=>{if(opened&&e.key==='Escape'){e.stopImmediatePropagation();e.preventDefault();button.setAttribute('aria-expanded','false');close();}},true);
+  lastIds=window.ars28CurrentParts();
+  const assemble=window.renderer.assemble;window.renderer.assemble=ids=>{lastIds=ids.slice();assemble(ids);};
+  window.ars21={apply,validate,get active(){return active;},get preview(){return preview;},get skins(){return skins;}};paint();
+  document.getElementById('reset').addEventListener('click',()=>apply(null).catch(error));
+ }
+ return {prepare,mount};
+})();
+</script><script>/* ARS-16: o mesmo motor roda no navegador e nos testes Node, sem dependências. */
+(function (root) {
+'use strict';
+const SLOTS={brl:'Cano',mag:'Carregador',scp:'Mira',amo:'Munição',btm:'Empunhadura',mzl:'Boca do cano',erg:'Ergonomia',top:'Laser',rgt:'Lateral direita',lft:'Lateral esquerda',sca:'Mira auxiliar'};
+const VIRTUES=['precisao','controle','mobilidade','furtividade','ttk'];
+const LABELS={precisao:'Precisão',controle:'Controle',mobilidade:'Mobilidade',furtividade:'Furtividade',ttk:'Tempo para matar'};
+function make(D) {
+ const part=id=>D.parts[id];
+ const items=(w,ids)=>ids.map(id=>part(id));
+ function validate(w,ids,complete=true) {
+  if(!D.weapons[w])throw Error('Arma desconhecida.');
+  const slots=new Set();let points=0;
+  for(const id of ids){const p=part(id);if(!p||p.weapon!==w)throw Error('Peça de outra arma ou não catalogada.');
+   if(slots.has(p.slot))throw Error('Duas peças no mesmo encaixe.');slots.add(p.slot);points+=p.cost;}
+  if(points>100)throw Error(`Troca recusada: ${points} pontos. O limite é 100. Escolha uma peça mais barata ou retire outra antes.`);
+  if(complete)for(const s of D.weapons[w].required)if(!slots.has(s))throw Error(`Falta uma peça: ${SLOTS[s]}.`);
+  return points;
+ }
+ function calc(wid,ids,complete=true) {
+  const w=D.weapons[wid], points=validate(wid,ids,complete), ps=items(wid,ids), b=w.base;
+  const es=ps.flatMap(p=>p.effects), sum=f=>es.filter(e=>e.field===f&&e.op==='soma').reduce((a,e)=>a+e.value,0);
+  const product=f=>es.filter(e=>e.field===f&&e.op==='multiplica').reduce((a,e)=>a*e.value,1);
+  const generic=f=>{let x=b[f]??null;const ops=es.filter(e=>e.field===f);if(ops.some(e=>e.op==='substitui'))return null;
+   for(const e of ops)if(x!==null)x=e.op==='soma'?x+e.value:x*e.value;return x;};
+  const recoil=b['Recoil.Zoomed.RecoilAmount']!=null?b['Recoil.Zoomed.RecoilAmount']*Math.pow(b['Recoil.Zoomed.RecoilAmountMultiplier'],b['Recoil.Zoomed.RecoilAmountMultiplierExponent']+sum('Recoil.Zoomed.RecoilAmountMultiplierExponent')):null;
+  const random=b['Recoil.Zoomed.RecoilDirectionVariation']!=null?b['Recoil.Zoomed.RecoilDirectionVariation']*Math.pow(b['Recoil.Zoomed.RecoilDirectionVariationMultiplier'],b['Recoil.Zoomed.RecoilDirectionVariationMultiplierExponent']+sum('Recoil.Zoomed.RecoilDirectionVariationMultiplierExponent')):null;
+  const index=w.timeIndex===null?null:w.timeIndex+sum('tempo_mira_indice');
+  let ads=index===null?null:(w.timeTable[String(index)]??null);
+  if(ads===null&&sum('tempo_mira_indice')===0){const barrel=ps.find(p=>p.slot==='brl');if(barrel)ads=w.barrelTimes[barrel.id.split('_brl_')[1]]??null;}
+  let speed=b.velocidade_ms==null?null:b.velocidade_ms*product('velocidade_ms');
+  const spread=generic('dispersao_ads_aumento'), movingSpread=generic('dispersao_ads_movendo');
+  const hipIndex=b.UnzoomedMinAnglesArrayIndex==null?null:b.UnzoomedMinAnglesArrayIndex+sum('UnzoomedMinAnglesArrayIndex');
+  const hip=hipIndex===null?null:(w.hipTable[String(hipIndex)]??null);
+  const movingIndex=b.MovingZoomedMinAnglesArrayIndex==null?null:b.MovingZoomedMinAnglesArrayIndex+sum('MovingZoomedMinAnglesArrayIndex');
+  const ammo=ps.find(p=>p.slot==='amo');let spotWorld=null,spotMap=null,stealthNote='Não sei o alcance do aviso desta combinação.';
+  const mag=ps.find(p=>p.slot==='mag'), capacityMatch=mag?.name.match(/^(\d+)rnd\b/i),capacity=capacityMatch?Number(capacityMatch[1]):null;
+  const muzzle=ps.find(p=>p.slot==='mzl'), suppressed=muzzle&&/suppressor/i.test(muzzle.name), subsonic=ammo&&/subsonic/i.test(ammo.name);
+  if(subsonic&&!ammo.effects.some(e=>e.field==='velocidade_ms'))speed=null;
+  if(wid==='carbine/m4a1'){
+   if(!muzzle){spotWorld=54;spotMap=150;stealthNote='Referência M4A1: 54 m no mundo e 150 m no minimapa.';}
+   else if(muzzle.name==='Flash Hider'){spotWorld=0;spotMap=150;stealthNote='Flash Hider: 0 m no mundo; 150 m no minimapa, conferidos na M4A1.';}
+   else if(muzzle.name==='Standard Suppressor'){spotWorld=0;spotMap=21;stealthNote='Standard Suppressor: 0 m no mundo; 21 m no minimapa, conferidos na M4A1.';}
+  }
+  if(suppressed&&subsonic){spotWorld=null;spotMap=null;stealthNote='Suposto, pelo que você informou: supressor + Subsonic pode chegar a 9 m no minimapa. Há perda de velocidade, ainda não quantificada nesta combinação.';}
+  else if(suppressed&&spotMap===null)stealthNote='Suposto: o texto indica supressão de clarão e ruído. O alcance do aviso desta arma não foi medido.';
+  if(['secondary/m45a1', 'secondary/skorpion'].includes(wid))stealthNote+=' Esta pistola já vem com munição subsônica de fábrica; o FMJ da lista pode não ser o que ela usa.';
+  let ref=null;
+  // Só a composição exata de peças relevantes ganha as notas do painel.
+  // A mira/munição omitidas nos prints impedem afirmar equivalência completa.
+  const relevant=ps.filter(p=>!['scp','amo'].includes(p.slot)).map(p=>p.id).sort().join('|');
+  if(wid==='carbine/m4a1')ref=D.references.find(r=>r.parts.slice().sort().join('|')===relevant)??null;
+  const unknown=ps.filter(p=>!p.effects.length&&!p.resolvedNone).length, partial=ps.filter(p=>p.open).length;
+  const modeChanged=es.some(e=>['modo_tiro','cadencia_interna_modo','cadencia_semiauto','cadencia_rajada','cadencia'].includes(e.field))||ps.some(p=>/single shot/i.test(p.name));
+  const ammoCode=ammo?({'Hollow Point':'hp','Subsonic HP':'shp','Synthetic Tip':'st'}[ammo.name]??'padrao'):'padrao';
+  const slug=w.class==='shotgun';
+  const timeBlocked=modeChanged||(slug&&(!ammo||ammo.name!=='Slugs'));
+  const time=w.ttk&&!timeBlocked?w.ttk.v['ttk|corpo|'+ammoCode+'|0']:null;
+  const head=w.ttk&&!timeBlocked?w.ttk.v['ttk|cabeca|'+ammoCode+'|0']:null;
+  return {points,recoil,random,ads,index,speed,spread,movingSpread,hip,hipIndex,movingIndex,capacity,spotWorld,spotMap,stealthNote,suppressed:!!suppressed,subsonic:!!subsonic,unknown,partial,panel:ref?.panel??null,time,head,modeChanged,timeBlocked,ammoCode};
+ }
+ const signature=ids=>ids.slice().sort().join('|');
+ function generate(wid,focus,count,different,range=0){
+  if(!VIRTUES.includes(focus)||![1,2,3].includes(count))throw Error('Escolha uma prioridade e de uma a três montagens.');
+  const w=D.weapons[wid];if(w.blocked)throw Error(w.blocked);
+  const c=D.classification?.weapons[wid];
+  if(!c?.complete)throw Error('A classificação completa desta arma ainda não foi concluída.');
+  const rows=f=>{const all=[...(c.best[f==='ttk'?'ttk'+range:f]??[]),...(c.frontiers[f]??[]).map(x=>x.parts)],seen=new Set();
+   return all.filter(ids=>{const k=signature(ids);if(seen.has(k))return false;seen.add(k);return true;}).map(ids=>({ids,metrics:calc(wid,ids)}));};
+  const seen=new Set(),out=[];
+  const main=rows(focus),alternate=focus==='mobilidade'?'controle':'mobilidade';
+  function gains(m,b,f){return metricVector(m,f,range).some((v,i)=>v!==null&&metricVector(b,f,range)[i]!==null&&v<metricVector(b,f,range)[i]-1e-10);}
+  for(let i=0;i<count;i++){
+   let f=focus,options=main,diversityGap=false;
+   if(different&&i>0){
+    const choices=[alternate,...VIRTUES.filter(x=>x!==focus&&x!==alternate)].filter(k=>!out.some(b=>b.focus===k));
+    const candidates=choices.flatMap(k=>rows(k).filter(r=>!seen.has(signature(r.ids))&&gains(r.metrics,out[0].metrics,k)).map(r=>({...r,f:k})));
+    if(candidates.length){const r=candidates[0];f=r.f;options=[r];}else diversityGap=true;
+   }
+   const r=options.find(r=>!seen.has(signature(r.ids)));if(!r)break;
+   seen.add(signature(r.ids));out.push({weapon:wid,focus:f,parts:r.ids.slice(),metrics:r.metrics,diversityGap});
+  }
+  return {builds:out,explored:c.groups};
+ }
+ function reason(wid,p,focus){
+  const e=p.effects, messages=[], by=f=>e.find(x=>x.field===f), num=x=>Number(x.toFixed(3)).toLocaleString('pt-BR');
+  const rec=by('coice_por_tiro');if(rec)messages.push(`${rec.value<1?'Reduz':'Aumenta'} o coice por tiro em cerca de ${num(Math.abs(1-rec.value)*100)}% sobre a base. A soma é calculada com as outras peças.`);
+  const ads=by('tempo_mira_indice');if(ads)messages.push(`Muda o índice de mira em ${ads.value>0?'+':''}${ads.value}; o tempo final aparece acima quando há tabela para a soma.`);
+  const vel=by('velocidade_ms');if(vel)messages.push(`${vel.value<1?'Reduz':'Aumenta'} a velocidade do projétil em ${num(Math.abs(1-vel.value)*100)}%.`);
+  if(by('dispersao_ads_aumento'))messages.push('Altera a dispersão por tiro ao mirar; veja o valor final em Precisão.');
+  if(p.slot==='amo'){
+   const head=D.weapons[wid].ammoHead[p.name];if(head)messages.push(`Multiplicador de cabeça desta munição: ×${num(head)} (estrutura extraída; só Hollow Point da M4A1 foi conferida na tela).`);
+   if(p.name==='FMJ')messages.push('Munição de referência para dano no peito; conserva pontos para as outras peças.');
+   if(/subsonic/i.test(p.name))messages.push('Prioriza menor percepção do disparo; a velocidade e o aviso em conjunto continuam supostos.');
+   if(p.name==='Slugs')messages.push('Balote: um projétil por disparo; é o único cenário de escopeta coberto pela conta de tempo.');
+  }
+  if(/suppressor/i.test(p.name))messages.push('Escolha de furtividade pelo texto da peça. O alcance só é conferido para Standard Suppressor na M4A1.');
+  if(p.name==='Flash Hider')messages.push('Reduz o aviso no mundo a 0 m na M4A1; não reduz o aviso do minimapa no gabarito.');
+  if(p.slot==='scp')messages.push('Mira escolhida entre as opções de menor custo; ampliação e conforto de uso ficam a seu critério.');
+  if(p.slot==='mag'){
+   const capacity=p.name.match(/^(\d+)rnd\b/i);if(capacity)messages.push(`O nome da peça indica ${capacity[1]} tiros. Menos tiros podem exigir recarga mais cedo; o tempo de recarga não foi resolvido.`);
+  }
+  if(!messages.length)messages.push(e.length?'Há efeito parcial registrado, sem vantagem desta prioridade demonstrada.':p.resolvedNone?'Sem efeito nos campos examinados pela extração. Isso não cobre todas as funções da peça.':'Não sei o efeito nos números cobertos por esta versão.');
+  if(p.open)messages.push('Lacuna: outros efeitos desta peça ainda não foram decifrados.');
+  return messages.join(' ');
+ }
+ return {calc,validate,generate,reason,signature};
+}
+// Vetores em unidades físicas; sinais apenas orientam menor=melhor.
+function metricVector(m,focus,range=0){
+ if(focus==='controle')return [m.recoil,m.random];
+ if(focus==='mobilidade')return [m.ads,m.recoil];
+ if(focus==='ttk')return [m.time?.[range]??null];
+ if(focus==='precisao')return [m.spread,m.movingSpread,m.hip,m.speed===null?null:-m.speed];
+ return [m.spotWorld,m.spotMap];
+}
+function compareVectors(a,b){for(let i=0;i<a.length;i++){if(a[i]===b[i])continue;if(a[i]===null)return 1;if(b[i]===null)return -1;return a[i]-b[i];}return 0;}
+function dominates(a,b){
+ // Não compara cobertura diferente como se a lacuna fosse zero.
+ if(a.some((v,i)=>(v===null)!==(b[i]===null)))return false;
+ return a.every((v,i)=>v===null||v<=b[i])&&a.some((v,i)=>v!==null&&v<b[i]);
+}
+root.Montador={make,SLOTS,VIRTUES,LABELS,metricVector,compareVectors,dominates};
+if(typeof module!=='undefined')module.exports=root.Montador;
+})(typeof globalThis!=='undefined'?globalThis:this);
+</script>
+<script>/* ARS-18. WebGL direto; posições, normais e índices extraídos de RES/chunk. */
+function ArmaWebGL(canvas, modelos, config, imagens={}) {
+ const gl=canvas.getContext('webgl',{alpha:true,antialias:true,preserveDrawingBuffer:true});
+ if(!gl)throw Error('WebGL indisponível');
+ const derivatives=gl.getExtension('OES_standard_derivatives');
+ function shader(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s;}
+ const program=gl.createProgram();
+ gl.attachShader(program,shader(gl.VERTEX_SHADER,`attribute vec3 p,n;attribute vec4 bone,weight;attribute vec2 uv;uniform mat4 bones[66];uniform mat4 m;uniform mat3 r;uniform vec4 lente;varying vec3 normal,position,dome;varying vec2 texcoord;void main(){mat4 skin=bones[int(bone.x)]*weight.x+bones[int(bone.y)]*weight.y+bones[int(bone.z)]*weight.z+bones[int(bone.w)]*weight.w;vec4 pos=skin*vec4(p,1.);gl_Position=m*pos;position=r*pos.xyz;normal=r*mat3(skin)*n;texcoord=uv;dome=r*(p-lente.xyz)/lente.w;}`));
+ gl.attachShader(program,shader(gl.FRAGMENT_SHADER,`${derivatives?'#extension GL_OES_standard_derivatives : enable\n':''}precision mediump float;varying vec3 normal,position,dome;varying vec2 texcoord;uniform sampler2D color,nmt,smoothness;uniform bool textured,hasNmt,hasSmooth,vidro;void main(){
+ vec3 n=normalize(normal);vec4 nm=texture2D(nmt,texcoord);
+ if(vidro){if(n.z<0.)n=-n;vec3 g=normalize(n+dome*.9),h=normalize(normalize(vec3(-.4,.8,.6))+vec3(0.,0.,1.));float f=pow(1.-max(g.z,0.),2.5),spot=pow(max(dot(g,h),0.),80.)*.55,a=clamp(.3+f*.5+spot,0.,1.);vec3 ceu=mix(vec3(.02,.04,.07),vec3(.5,.62,.72),smoothstep(-.3,.8,g.y+g.x*.25)),cobertura=mix(vec3(.2,.07,.32),vec3(.05,.3,.26),smoothstep(-.6,.6,g.x+g.y*.4));gl_FragColor=vec4((mix(cobertura,ceu,.3+f*.6)+spot)*a,a);return;}
+ ${derivatives?`if(hasNmt){vec3 dp1=dFdx(position),dp2=dFdy(position);vec2 duv1=dFdx(texcoord),duv2=dFdy(texcoord);float determinant=duv1.x*duv2.y-duv1.y*duv2.x;if(abs(determinant)>.00000001){vec3 t=normalize((dp1*duv2.y-dp2*duv1.y)/determinant),b=normalize((-dp1*duv2.x+dp2*duv1.x)/determinant);vec2 xy=nm.rg*2.-1.;n=normalize(t*xy.x+b*xy.y+n*sqrt(max(.001,1.-dot(xy,xy))));}}`:''}
+ float metal=hasNmt?nm.b:0.,smooth=hasSmooth?texture2D(smoothness,texcoord).r:.35;
+ vec3 base=textured?pow(texture2D(color,texcoord).rgb,vec3(2.2)):vec3(.035,.038,.04);
+ if(n.z<0.)n=-n;
+ vec3 light=normalize(vec3(-.4,.8,.6)),fill=normalize(vec3(.7,.1,.5)),halfway=normalize(light+vec3(0.,0.,1.)),r=reflect(vec3(0.,0.,-1.),n);
+ float ndl=max(dot(n,light),0.),nv=max(n.z,0.),spec=pow(max(dot(n,halfway),0.),mix(8.,200.,smooth))*mix(.15,2.2,smooth),tube=exp(-pow((r.y-.55)/(.05+.35*(1.-smooth)),2.))*(.1+1.5*smooth);
+ vec3 ambient=mix(vec3(.012,.018,.022),vec3(.04,.065,.08),n.y*.5+.5),env=mix(vec3(.006,.009,.011),vec3(.26,.33,.37),smoothstep(-.1,.9,r.y));
+ vec3 f0=mix(vec3(.04),base,metal),fresnel=f0+(max(vec3(smooth),f0)-f0)*pow(1.-nv,5.);
+ // O cenário do jogo é azulado: a luz fria apaga o marrom da textura, como nos prints.
+ vec3 c=base*(1.-metal)*(ambient+vec3(.66,.74,.78)*ndl+vec3(.06,.08,.09)*max(dot(n,fill),0.))+fresnel*(env*(.35+.65*smooth)+tube*1.5+spec*ndl*1.6);
+ c=c*(2.51*c+.03)/(c*(2.43*c+.59)+.14);
+ gl_FragColor=vec4(pow(clamp(c,0.,1.),vec3(1./2.2)),1.);
+ }`));
+ gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program));gl.useProgram(program);
+ const loc={p:gl.getAttribLocation(program,'p'),n:gl.getAttribLocation(program,'n'),bone:gl.getAttribLocation(program,'bone'),weight:gl.getAttribLocation(program,'weight'),uv:gl.getAttribLocation(program,'uv'),bones:gl.getUniformLocation(program,'bones[0]'),m:gl.getUniformLocation(program,'m'),r:gl.getUniformLocation(program,'r'),color:gl.getUniformLocation(program,'color'),textured:gl.getUniformLocation(program,'textured'),nmt:gl.getUniformLocation(program,'nmt'),smoothness:gl.getUniformLocation(program,'smoothness'),hasNmt:gl.getUniformLocation(program,'hasNmt'),hasSmooth:gl.getUniformLocation(program,'hasSmooth'),vidro:gl.getUniformLocation(program,'vidro'),lente:gl.getUniformLocation(program,'lente')};
+ // O jogo não entrega textura para a lente: o vidro é desenhado aqui, não copiado. ZOnly e retículo só existem para o motor do jogo.
+ const VIDRO=/lens|glass/i,OPACO=/opaque/i,SEM_DESENHO=/zonly|reticle/i;
+ function centroLente(dados){const d=new DataView(dados.buffer),a=[Infinity,Infinity,Infinity],b=[-Infinity,-Infinity,-Infinity];for(let i=0;i+44<=dados.length;i+=44)for(let k=0;k<3;k++){const v=d.getFloat32(i+k*4,true);a[k]=Math.min(a[k],v);b[k]=Math.max(b[k],v);}return [(a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2,Math.max(b[0]-a[0],b[1]-a[1],b[2]-a[2])/2||1];}
+ function bytes(s){return Uint8Array.from(atob(s),c=>c.charCodeAt(0));}
+ const buffers={},buffersCompartilhados=new Map();
+ for(const [id,model] of Object.entries(modelos)){
+  if(buffersCompartilhados.has(model)){buffers[id]=buffersCompartilhados.get(model);continue;}
+  buffers[id]=model.sections.map(s=>{
+   const dados=bytes(s.vertices),vidro=!s.texture&&VIDRO.test(s.name)&&!OPACO.test(s.name)&&!SEM_DESENHO.test(s.name);
+   const v=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,v);gl.bufferData(gl.ARRAY_BUFFER,dados,gl.STATIC_DRAW);
+   const ix=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ix);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,bytes(s.indices),gl.STATIC_DRAW);
+   return {v,ix,dados,indices:bytes(s.indices),count:SEM_DESENHO.test(s.name)?0:s.count,uv:s.uv,texture:s.texture,nmt:s.nmt,smooth:s.smooth,vidro,lente:vidro?centroLente(dados):[0,0,0,1]};
+  });
+  buffersCompartilhados.set(model,buffers[id]);
+ }
+ function mul(a,b){const c=Array(16).fill(0);for(let j=0;j<4;j++)for(let i=0;i<4;i++)for(let k=0;k<4;k++)c[j*4+i]+=a[k*4+i]*b[j*4+k];return c;}
+ function mat(p){const [x,y,z,w]=p.q,[tx,ty,tz]=p.t;return [1-2*y*y-2*z*z,2*x*y+2*z*w,2*x*z-2*y*w,0,2*x*y-2*z*w,1-2*x*x-2*z*z,2*y*z+2*x*w,0,2*x*z+2*y*w,2*y*z-2*x*w,1-2*x*x-2*y*y,0,tx,ty,tz,1];}
+ let skinAtual=[];
+ function pose(overrides){
+  const local=config.local.map(m=>{const a=m.slice();a[15]=1;return a;});
+  config.poses.forEach(p=>local[p.bone]=mat(p));
+  overrides.forEach(p=>local[p.bone]=mul(local[p.bone],mat(p)));
+  const global=[];function world(i){return global[i]??=(config.parents[i]<0?local[i]:mul(world(config.parents[i]),local[i]));}
+  const skin=local.map((_,i)=>{const inv=config.inverse[i].slice();inv[15]=1;return mul(world(i),inv);});
+  skinAtual=skin;gl.uniformMatrix4fv(loc.bones,false,new Float32Array(skin.flat()));
+ }
+ let ativos=[],animando=false,animacao=0;
+ // A câmera gira em torno do meio da arma: PIVO é esse ponto no modelo; ox e oy, onde ele aparece na tela.
+ const PIVO=config.camera?.pivot??[0,.017,.115],YAW=-.06,PITCH=.06,ESCALA=config.camera?.scale??1.96,PROPORCAO=canvas.width/canvas.height;
+ // O eixo longo da arma é Z; +Z aponta para a boca do cano (esquerda na tela).
+ function rotacao(yaw,pitch){const cy=Math.cos(yaw),sy=Math.sin(yaw),cx=Math.cos(pitch),sx=Math.sin(pitch);
+  // O X sai invertido: sem isso a arma aparece espelhada, com a janela de ejeção no lado esquerdo.
+  return [-sy,sx*cy,-cx*cy,0,cx,sx,-cy,-sx*sy,cx*sy];}
+ function projeta(r,s){return [(r[0]*PIVO[0]+r[3]*PIVO[1]+r[6]*PIVO[2])*s/PROPORCAO,(r[1]*PIVO[0]+r[4]*PIVO[1]+r[7]*PIVO[2])*s];}
+ const inicio=projeta(rotacao(YAW,PITCH),ESCALA),centro=config.camera?[.306,.22]:[.306+inicio[0],.22+inicio[1]];
+ const cam={z:1,ox:centro[0],oy:centro[1],yaw:YAW,pitch:PITCH};
+ function camera(alvo,ms=250){
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)ms=0;
+  const de={...cam},t0=performance.now(),esta=++animacao;
+  if(document.hidden||!ms){Object.assign(cam,alvo);animando=false;draw();return;}
+  animando=true;
+  (function passo(agora){if(esta!==animacao)return;const t=Math.min(1,(agora-t0)/ms),e=t*(2-t);
+   for(const k of Object.keys(alvo))cam[k]=de[k]+(alvo[k]-de[k])*e;
+   if(t<1){draw();requestAnimationFrame(passo);}else{Object.assign(cam,alvo);animando=false;draw();}})(t0);
+ }
+ const texCache=new Map(),textureErrors=[];let pending=0;
+ const white=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,white);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([255,255,255,255]));gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+ function texture(file){
+  if(!file||!imagens[file])return null;
+  const source=imagens[file],cached=texCache.get(source);if(cached)return cached.ready?cached.tex:null;
+  const record={ready:false,tex:gl.createTexture()},pic=new Image();texCache.set(source,record);pending++;
+  pic.onload=()=>{gl.bindTexture(gl.TEXTURE_2D,record.tex);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,pic);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.generateMipmap(gl.TEXTURE_2D);record.ready=true;pending--;draw();};
+  pic.onerror=()=>{textureErrors.push(file);pending--;draw();};pic.src=source;return null;
+ }
+ function draw(){
+  const w=canvas.width,h=canvas.height,ratio=w/h;
+  gl.viewport(0,0,w,h);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);
+  const scale=ESCALA*cam.z,r=rotacao(cam.yaw,cam.pitch);
+  const p=projeta(r,scale),pz=(r[2]*PIVO[0]+r[5]*PIVO[1]+r[8]*PIVO[2])*.8;
+  const m=[r[0]*scale/ratio,r[1]*scale,r[2]*.8,0,r[3]*scale/ratio,r[4]*scale,r[5]*.8,0,r[6]*scale/ratio,r[7]*scale,r[8]*.8,0,cam.ox-p[0],cam.oy-p[1],-pz,1];
+  gl.uniformMatrix4fv(loc.m,false,m);gl.uniformMatrix3fv(loc.r,false,r);
+  // O vidro vem depois de tudo, sem gravar profundidade, para deixar ver o que está atrás dele.
+  gl.disable(gl.BLEND);gl.depthMask(true);
+  for(const passoVidro of [false,true]){if(passoVidro){gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);}
+  gl.uniform1i(loc.vidro,passoVidro);
+  for(const a of ativos){for(const s of buffers[a]||[]){if(s.vidro!==passoVidro||!s.count)continue;gl.uniform4fv(loc.lente,s.lente);const t=texture(s.texture),nt=texture(s.nmt),sm=texture(s.smooth);
+   gl.bindBuffer(gl.ARRAY_BUFFER,s.v);gl.enableVertexAttribArray(loc.p);gl.vertexAttribPointer(loc.p,3,gl.FLOAT,false,44,0);gl.enableVertexAttribArray(loc.n);gl.vertexAttribPointer(loc.n,3,gl.FLOAT,false,44,12);
+   gl.enableVertexAttribArray(loc.bone);gl.vertexAttribPointer(loc.bone,4,gl.UNSIGNED_SHORT,false,44,24);gl.enableVertexAttribArray(loc.weight);gl.vertexAttribPointer(loc.weight,4,gl.UNSIGNED_BYTE,true,44,32);
+   gl.enableVertexAttribArray(loc.uv);gl.vertexAttribPointer(loc.uv,2,gl.FLOAT,false,44,36);
+   gl.uniform1i(loc.textured,Boolean(t&&s.uv));gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,t||white);gl.uniform1i(loc.color,0);
+   gl.uniform1i(loc.hasNmt,Boolean(nt&&s.uv));gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,nt||white);gl.uniform1i(loc.nmt,1);
+   gl.uniform1i(loc.hasSmooth,Boolean(sm&&s.uv));gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,sm||white);gl.uniform1i(loc.smoothness,2);
+   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,s.ix);gl.drawElements(gl.TRIANGLES,s.count,gl.UNSIGNED_SHORT,0);
+  }}}
+  gl.depthMask(true);
+ }
+ let drag=null;
+ // Botão esquerdo gira; botão direito leva a arma para cima, para baixo e para os lados (ordem do dono, 31/10).
+ canvas.addEventListener('pointerdown',e=>{drag=e.button===2?{mover:true,x:e.clientX,y:e.clientY,a:cam.ox,b:cam.oy}:{x:e.clientX,y:e.clientY,a:cam.yaw,b:cam.pitch};canvas.setPointerCapture(e.pointerId);});
+ canvas.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+  if(drag.mover){const r=canvas.getBoundingClientRect();cam.ox=drag.a+dx*2/r.width;cam.oy=drag.b-dy*2/r.height;}
+  else{cam.yaw=drag.a+dx*.008;cam.pitch=Math.max(-1.4,Math.min(1.4,drag.b+dy*.008));}
+  draw();});
+ canvas.addEventListener('pointerup',()=>{drag=null;});
+ canvas.addEventListener('contextmenu',e=>e.preventDefault());
+ canvas.addEventListener('wheel',e=>{e.preventDefault();cam.z=Math.max(.6,Math.min(6,cam.z*Math.exp(-e.deltaY*.001)));draw();},{passive:false});
+ function assemble(ids){
+  const padrao=ids.some(id=>id.includes('_mzl_'))?[]:[config.defaultMuzzle];
+  const escolhidos=ids.flatMap(id=>config.parts[id]?.assets||[]);
+  const base=config.slots?.weapon_base?.some(a=>escolhidos.includes(a))?[]:config.base;
+  const defaults=config.slotDefaults?Object.entries(config.slotDefaults).filter(([slot,asset])=>asset&&!config.slots[slot]?.some(a=>escolhidos.includes(a))).map(([,asset])=>asset).concat(padrao):base.concat(padrao);
+  const assets=[...new Set(defaults.concat(escolhidos))];
+  const fragments=assets.map(a=>config.fragments[a]).filter(Boolean);
+  ativos=[...new Set(fragments.flatMap(f=>f.meshes))];
+  pose(fragments.flatMap(f=>f.poses));draw();
+ }
+ // Limites dos vértices realmente indexados, com os mesmos pesos/ossos do shader.
+ // Usado só ao enquadrar/ensaiar C: nenhum tamanho escrito por arma.
+ function limites(alvo=cam){
+  const r=rotacao(alvo.yaw,alvo.pitch),lo=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity];let vertices=0;
+  for(const id of ativos)for(const s of buffers[id]||[]){if(!s.count)continue;const d=new DataView(s.dados.buffer,s.dados.byteOffset,s.dados.byteLength),ix=new DataView(s.indices.buffer,s.indices.byteOffset,s.indices.byteLength),seen=new Set();
+   for(let i=0;i<s.count;i++){const n=ix.getUint16(i*2,true);if(seen.has(n))continue;seen.add(n);const o=n*44,p=[d.getFloat32(o,true),d.getFloat32(o+4,true),d.getFloat32(o+8,true),1],q=[0,0,0];
+    for(let j=0;j<4;j++){const w=d.getUint8(o+32+j)/255;if(!w)continue;const b=skinAtual[d.getUint16(o+24+j*2,true)];for(let k=0;k<3;k++)q[k]+=w*(b[k]*p[0]+b[4+k]*p[1]+b[8+k]*p[2]+b[12+k]);}
+    const delta=q.map((v,k)=>v-PIVO[k]);for(let k=0;k<3;k++){const v=(r[k]*delta[0]+r[3+k]*delta[1]+r[6+k]*delta[2])*(k===0?ESCALA*alvo.z/PROPORCAO:k===1?ESCALA*alvo.z:.8)+(k===0?alvo.ox:k===1?alvo.oy:0);lo[k]=Math.min(lo[k],v);hi[k]=Math.max(hi[k],v);}vertices++;
+   }
+  }return {min:lo,max:hi,vertices};
+ }
+ function enquadrarPainel(alvo,retangulo){
+  const b=limites({...alvo,z:1,ox:0,oy:0});let z=alvo.z;
+  for(let k=0;k<2;k++){const c=k?alvo.oy:alvo.ox;if(b.min[k]<0)z=Math.min(z,(c-retangulo.min[k])/-b.min[k]);if(b.max[k]>0)z=Math.min(z,(retangulo.max[k]-c)/b.max[k]);}
+  return {...alvo,z:Math.max(.001,z)};
+ }
+ return {assemble,set(ids,overrides=[]){ativos=ids;pose(overrides);draw();},draw,camera,limites,enquadrarPainel,centro,inicial:{yaw:YAW,pitch:PITCH},rotate(y,p){cam.yaw=y;cam.pitch=p;draw();},get ready(){return pending===0&&!animando;},get camara(){return {...cam};},textureErrors,gl};
+}
+</script>
+<script>/* ARS-19. Tabelas extraídas: índices somam; recarga divide pelo fator WME. */
+function ArmaOrdem(D,a,b){const x=D.parts[a],y=D.parts[b];return (x.gameOrder??Infinity)-(y.gameOrder??Infinity)||x.cost-y.cost||x.name.localeCompare(y.name);}
+function ArmaPainel(D,ids,m){
+ const a=D.ars19,b=a.base,ps=ids.map(k=>D.parts[k]),ops=ids.map(k=>a.parts[k]);
+ const sum=k=>ops.reduce((v,o)=>v+(o?.[k]??0),0),factor=ops.reduce((v,o)=>v*(o?.reloadFactor??1),1);
+ // Os oito gabaritos não testam dois fatores de recarga nem dois offsets ADS.
+ // Não promover produto/soma não conferidos a uma conta do jogo.
+ const move=b.moveIndex==null||ops.filter(o=>o?.moveIndex).length>1?null:a.moveTable[b.moveIndex+sum('moveIndex')]??null,sprint=b.sprintIndex==null?null:a.sprintTable[b.sprintIndex+sum('sprintIndex')]??null;
+ const reload=b.reloadTime==null||!b.reloadSpeed||b.reloadDelay==null||ops.filter(o=>o&&o.reloadFactor!==1).length>1?null:b.reloadTime/b.reloadSpeed/factor+b.reloadDelay;
+ const weapon=D.activeWeapon??Object.keys(D.weapons)[0];
+ const ammo=ps.find(p=>p.slot==='amo'),head=ammo?D.weapons[weapon].ammoHead[ammo.name]??null:null;
+ const exact=D.exactPanels.find(r=>r.parts.join('|')===ids.slice().sort().join('|'));
+ const reloadADS=ops.find(o=>o?.reloadADS!=null)?.reloadADS??exact?.printed?.reloadADS??null;
+ return {...m,move,sprint,reload,headMultiplier:head,fireModes:m.modeChanged?null:b.fireModes,regen:exact?.printed?.regen??null,collateral:exact?.printed?.collateral??null,reloadADS,panel:exact?.panel??null};
+}
+if(typeof module!=='undefined')module.exports={ArmaPainel,ArmaOrdem};
+</script>
+<script>
+let DADOS;
+let ARMA,INICIAL,FICHA;const RECORTE=[815, 250, 1550, 595];
+let MODELOS,CONFIG3D,TEXTURAS;const ARS20_A={};const ARS20_INDEX={"assaultrifle/6p67":{"id":"assaultrifle/6p67","name":"KORD 6P67","payload":"2b388105c148735dfaae17d82fca50b38fd940f213327a94be5967b0df3bd63a","pronta":true},"assaultrifle/ace32":{"id":"assaultrifle/ace32","name":"NVO-228E","payload":"e1a53116afb1decda27b943ab46f3414dc76dca8559fe8944fdfd4dadcc887ec","pronta":true},"assaultrifle/ef88":{"id":"assaultrifle/ef88","name":"EF88","payload":"6df0af09f5493372f40d3d954a221ea2fd8730ae57061927bc7e4ada064efdfe","pronta":true},"assaultrifle/g36":{"id":"assaultrifle/g36","name":"B36A4","payload":"a37519014ae442571066e52f205ac2adb08e7ff2b4bbac98398d915d8ce0ff29","pronta":true},"assaultrifle/g3a4":{"id":"assaultrifle/g3a4","name":"AK4D","payload":"ccbf7c5e84630a2ea0f31a75475d5d658c72417828879ee2eb908d0b02d1db63","pronta":true},"assaultrifle/hk433":{"id":"assaultrifle/hk433","name":"M433","payload":"48aa3f2cecd7d4d10ba8dde3af487bbe83d76da68e69382100262577a66724ea","pronta":true},"assaultrifle/l85a3":{"id":"assaultrifle/l85a3","name":"L85A3","payload":"4d4cfb4c68a8d48e9762e9f75754ee37c69c101bfc5a9aee8f12fcad25c828eb","pronta":true},"assaultrifle/mrgga":{"id":"assaultrifle/mrgga","name":"Mk 24","payload":"a74d731f4d7d0d3de5cc8a34187fd77096debc207f54808913c4aef52936fe74","pronta":true},"assaultrifle/scarl":{"id":"assaultrifle/scarl","name":"SOR-556 Mk2","payload":"2c28e9bde0ef304ed8e07a4cd10be4abf2a25e7a40d06843d3d43747ff14abbb","pronta":true},"assaultrifle/tavor7":{"id":"assaultrifle/tavor7","name":"TR-7","payload":"b88307e3a5f0f11866b728197b02cb6db0e410e23b3857c73d48dbd5ed2c06ef","pronta":true},"assaultrifle/vhs2":{"id":"assaultrifle/vhs2","name":"VCR-2","payload":"092f0d09858336c75b4d5c8f293625c5cc5024384f8e1f53f8dc000cc0f43d77","pronta":true},"boltaction/m2010esr":{"id":"boltaction/m2010esr","name":"M2010 ESR","payload":"de0b764286e7787cb82fc3c501ce95e83cf848344bfca91ff42033d75b02850f","pronta":true},"boltaction/mrad":{"id":"boltaction/mrad","name":"PSR","payload":"eabe11ba4bd51dee78d0c743a6537349dc0a4c3134963c4a306473070167d16d","pronta":true},"boltaction/sv98m":{"id":"boltaction/sv98m","name":"SV-98","payload":"f07893ed2975aa1a0ce4ce79355682ff181cb1b79904d6b3d262d8de5f1328c9","pronta":true},"carbine/ak205":{"id":"carbine/ak205","name":"AK-205","payload":"9013ce3830c5cb27d818abbb275175d715e5e511384eafc30b5dcf8f3d51c823","pronta":true},"carbine/bren3":{"id":"carbine/bren3","name":"BROD 3","payload":"d7a089203007dc10fe0575e9943e46b3647c648e464cf6185f459884be2eb1ca","pronta":true},"carbine/hk417a2":{"id":"carbine/hk417a2","name":"M417 A2","payload":"bb38c479b99bb3827ca8eda91decf7b28297c56ca9100850210b879ae8264394","pronta":true},"carbine/m4a1":{"id":"carbine/m4a1","name":"M4A1","payload":"a68022af38875ee48916c398459050180b84d7d5f895ee196193020ea6d51f43","pronta":true},"carbine/msbsgrotb":{"id":"carbine/msbsgrotb","name":"GRT-BC","payload":"04a8d18e86e0fcc85e60ad5caacc4800001fe9af6282c076e45f495e9de29493","pronta":true},"carbine/qbz192":{"id":"carbine/qbz192","name":"QBZ-192","payload":"da155b8d9224154b7146f2e4e2fc5f89d3dcbc274e04104701bbc943d0f05f5d","pronta":true},"carbine/scarsc":{"id":"carbine/scarsc","name":"SOR-300SC","payload":"1b18b7b8feea3c4d3c00740b9d3c3f10482160f16e8caec4e885dd28f052bf84","pronta":true},"carbine/sig553r":{"id":"carbine/sig553r","name":"SG 553R","payload":"1e043babcdba64d84024235c5a20abc47a87105e33ad1662a13a8952c4c961c2","pronta":true},"carbine/xm7":{"id":"carbine/xm7","name":"M277","payload":"4bc8686294ecdcc46b8d83f79ddf973f2bc3427ba44554f97cd1ed28c44d3ead","pronta":true},"dmr/aradmr":{"id":"dmr/aradmr","name":"LMR27","payload":"18d8fd0f97c7054f7f163eb3797c8ddbebd7301d617266ed05b00a26e4e6073a","pronta":true},"dmr/m39emr":{"id":"dmr/m39emr","name":"M39 EMR","payload":"b78453d6ca2ad8987aba311d63c5dace3285c36c0bb1db00f44f5ea44d8ee867","pronta":true},"dmr/msbsgrotcps":{"id":"dmr/msbsgrotcps","name":"GRT-CPS","payload":"db2f77db16db03a5aa87862723ed1f4d900a1be7bc80415ed02f369cb6c5d2fe","pronta":true},"dmr/svch":{"id":"dmr/svch","name":"SVK-8.6","payload":"2baad9e93a1f694fd8786e5fdd83431d7d21f3a0b7cf7c00f4931c421c0226cf","pronta":true},"dmr/svdm":{"id":"dmr/svdm","name":"SVDM","payload":"2f7c67c88f5fba51e9ed9abe37266115ed133a7ffbbc8e932e37671f0bc7b5b2","pronta":true},"dmr/vssm":{"id":"dmr/vssm","name":"VSSM","payload":"2b6cc81be7f1e0366fb454f4472706c1ceec04bd691cace3658d769aa8688720","pronta":true},"mg/m240l":{"id":"mg/m240l","name":"M240L","payload":"8a4528dbfc69a48efec63e0f29d14bb05574963257db963929c93f9238472f1a","pronta":true},"mg/m250":{"id":"mg/m250","name":"M250","payload":"851585ac2b4be4ed9f9eb4a3d71428713720570a0e01e16fcc2347983bfb3431","pronta":true},"mg/m60e6":{"id":"mg/m60e6","name":"M/60","payload":"2ed35a8ea7114578d9fd9ca4f5683b206c2a5359a72cdc5e18d0ddd4fd34c782","pronta":true},"mg/mg4k":{"id":"mg/mg4k","name":"M123K","payload":"176993eed109da00ecd12db7ba5ecafcbe70d1131a9901f28eddcffaac326937","pronta":true},"mg/mg5":{"id":"mg/mg5","name":"M121 A2","payload":"850e27987d4889f19a698187f29e1ff7fd8644461985ef7d96e3b575f4925fcd","pronta":true},"mg/minimi":{"id":"mg/minimi","name":"L110","payload":"1c74cb544ee9127619154fe29a6044eabd1ccc22449cdbabe677c58099a85e93","pronta":true},"mg/pkm":{"id":"mg/pkm","name":"Z84M","payload":"ffe46f43a0211185fff85c0c6fd76d3f6c6ad65289a0cbdc145b6324b25fedba","pronta":true},"mg/rpk74m":{"id":"mg/rpk74m","name":"RPK-74M","payload":"76a5d6bb146915535088631144980cd87e6a00fc67dc3bb81909f8415256df81","pronta":true},"mg/rpkm":{"id":"mg/rpkm","name":"RPKM","payload":"df331375e2bec4f5701e99e051bc7991a7ad288a3d473fbac574535f7cd30b04","pronta":true},"mg/ultimax":{"id":"mg/ultimax","name":"KTS100 MK8","payload":"59cb25765b2c7ca6ce6d7327b0ed0a2238378f9975e7c61290120cbcf91a64e6","pronta":true},"secondary/fiveseven":{"id":"secondary/fiveseven","name":"ES 5.7","payload":"29698e1f589e72945f489c3853f4bb58bb9f69d6254de5260d6576d2540362b3","pronta":true},"secondary/g22":{"id":"secondary/g22","name":"GGH-22","payload":"df21e8cb4b75e37b852cab12e99d9c70002339ca652a1d0a64d9b2e28338c9e2","pronta":true},"secondary/m18":{"id":"secondary/m18","name":"P18","payload":"f2adbe218dfea95b7e433310c97181733db11257b3f400ff6871f2fdc58d07f3","pronta":true},"secondary/raginghunter":{"id":"secondary/raginghunter","name":"M44","payload":"56284be5fe9be06577d6bf6fc75ccb6c8c3f284e8ddcac840111fdee80b2137f","pronta":true},"secondary/skorpion":{"id":"secondary/skorpion","name":"vz. 61","payload":"934696c021eff8f0799de595d92ea6a8d604d16e04cf2da4e1dd8092c7e56dee","pronta":true},"shotgun/185ksk":{"id":"shotgun/185ksk","name":"18.5KS-K","payload":"75bbb534381afe1ec1bf1a1a54248c8c5e24f78b24ee9a2efddaced089ed1ea3","pronta":true},"shotgun/dp12":{"id":"shotgun/dp12","name":"DB-12","payload":"05071d6c6fa1112ffeb19b171c3c8330a9265bd68a699e1a9a5b8a6bf8af13f6","pronta":true},"shotgun/m1014":{"id":"shotgun/m1014","name":"M1014","payload":"72bc1c064da1fd9d7947feaae33c1dfbc52c0e1cdadf2281153be2e3d05c25cd","pronta":true},"smg/apc10":{"id":"smg/apc10","name":"SCW-10","payload":"991e71a2214099186a1a358fcb0015aaaae4a14fd1d414c41407c3ec0d4c1c81","pronta":true},"smg/apdw":{"id":"smg/apdw","name":"SL9","payload":"9219becaeea71e086e36eb1f07751a8ff7b61e6ce0bdf27e98c21fcbf3100618","pronta":true},"smg/mp5mli":{"id":"smg/mp5mli","name":"PW5A3","payload":"5a929def6837f27e639c692717b20182de121315c93762669b9239ddee8923d5","pronta":true},"smg/mp7a2":{"id":"smg/mp7a2","name":"PW7A2","payload":"555ae4268febc83e6bb2fbd44f7d21c23b1d8a38a2c7bbf20ec58e82b8526759","pronta":true},"smg/mpx":{"id":"smg/mpx","name":"SGX","payload":"1386e3ac72bcd707ddc2311b8dbc91954773f742624c7835d68469ecbd5f89cb","pronta":true},"smg/p90":{"id":"smg/p90","name":"USG-90","payload":"ac1835cf5b878b7fa871fa1bda469d03a908a945636e6d0ce6fe78872db086fe","pronta":true},"smg/pp19":{"id":"smg/pp19","name":"PP-19","payload":"ca1f90b2edc978cf6b30e2fa25eb6f7ddcac41f898afdd844560c683e802b321","pronta":true},"smg/rsar999":{"id":"smg/rsar999","name":"RSPR","payload":"dabe1ec7ada76b9cf9f34e7f71dc913ca940f7e72c67d5e678d4900a020c1ae3","pronta":true},"smg/ump40":{"id":"smg/ump40","name":"UMG-40","payload":"7a3bf9e232bb4c2661a5c9fee2db56352b34d22d6290e070afac8e3e922dac94","pronta":true},"smg/vector":{"id":"smg/vector","name":"KV9","payload":"968add6b369fa8f53e209c79889156f2947d9ded232fbd6c2974fe6c1d300194","pronta":true}};
+function iniciar(){
+// Posições da tela CUSTOMIZE M4A1 do print (x, y do cartão; x, y do ponto na arma), em 2000 x 1125.
+const ENCAIXES={
+ scp:{rotulo:'SCOPE',pos:[1337,113],alvo:[1225,320]},
+ top:{rotulo:'TOP ACCESSORY',pos:[1066,152],alvo:[1070,345]},
+ rgt:{rotulo:'RIGHT ACCESSORY',pos:[770,193],alvo:[945,340]},
+ lft:{rotulo:'LEFT ACCESSORY',pos:[650,800],alvo:[1080,410]},
+ sca:{rotulo:'OPTIC ACCESSORY',pos:[1570,173],alvo:[1300,335]},
+ mzl:{rotulo:'MUZZLE',pos:[353,516],alvo:[835,375]},
+ brl:{rotulo:'BARREL',pos:[551,570],alvo:[930,378]},
+ btm:{rotulo:'UNDERBARREL',pos:[968,678],alvo:[1080,410]},
+ mag:{rotulo:'MAGAZINE',pos:[1069,802],alvo:[1205,500]},
+ amo:{rotulo:'AMMUNITION',pos:[1257,740],alvo:[1225,560]},
+ erg:{rotulo:'ERGONOMICS',pos:[1747,372],alvo:[1500,400]}
+};
+const motor=Montador.make(DADOS),arma=DADOS.weapons[ARMA],$=id=>document.getElementById(id);
+for(const [slot,point] of Object.entries(CONFIG3D.anchors??{}))if(ENCAIXES[slot])ENCAIXES[slot].alvo=point;
+const renderer=window.renderer=ArmaWebGL($('arma'),MODELOS,CONFIG3D,TEXTURAS);
+const pecaDe=id=>DADOS.parts[id],porEncaixe={};
+const fabrica=new Set(DADOS.factory?.provada?(DADOS.factory.defaultParts??DADOS.factory.parts):[]),fabricaMontagem=new Set(DADOS.factory?.provada?DADOS.factory.parts:[]);
+function eFabrica(id){return fabrica.has(id);}
+const marcaFabrica=id=>eFabrica(id)?`<span class="marca-fabrica" data-default="${id}" aria-label="Default"><i class="simbolo-default" aria-hidden="true"></i></span>`:'';
+const icone=p=>p?.icon?`<img class="icone" src="${p.icon}" alt="">`:'';
+arma.parts.forEach(id=>(porEncaixe[pecaDe(id).slot]??=[]).push(id));
+Object.values(porEncaixe).forEach(l=>l.sort((a,b)=>ArmaOrdem(DADOS,a,b)));
+let montagem={},aberto=null,inspecao=false,expandido=false;
+INICIAL.forEach(n=>{const id=arma.parts.find(k=>pecaDe(k).name===n);montagem[pecaDe(id).slot]=id;});
+const montagemInicial={...montagem};
+// A montagem de cada jogador fica no navegador dele. Cookie iria em todo pedido ao site: 54 KB com as 67 armas salvas (medido em 31/10).
+// Fora de um site (file://) não guarda: é assim que os testes reabrem a página na fábrica. Sem armazenamento, a página só não lembra.
+const chaveMontagem='bf6_'+ARMA,guardaAtiva=location.protocol!=='file:';
+function lerMontagem(){try{if(!guardaAtiva)return null;const v=localStorage.getItem(chaveMontagem);if(!v)return null;
+ const lista=JSON.parse(v),m={};
+ for(const id of lista){if(!arma.parts.includes(id)||m[pecaDe(id).slot])return null;m[pecaDe(id).slot]=id;}
+ return arma.required.every(s=>m[s])&&Object.values(m).reduce((n,k)=>n+pecaDe(k).cost,0)<=100?m:null;}catch{return null;}}
+function gravarMontagem(){try{if(!guardaAtiva)return;const igual=ids().length===Object.keys(montagemInicial).length&&ids().every(id=>Object.values(montagemInicial).includes(id));
+ if(igual)localStorage.removeItem(chaveMontagem);else localStorage.setItem(chaveMontagem,JSON.stringify(ids()));}catch{}}
+montagem=lerMontagem()??montagem;
+const ids=(m=montagem)=>Object.values(m),pontos=(m=montagem)=>ids(m).reduce((n,k)=>n+pecaDe(k).cost,0);
+window.ars28CurrentParts=()=>ids().slice();
+const pct=(v,t)=>v/t*100+'%';
+// O quinto valor marca o que só aparece com o painel expandido, como na tecla C do jogo.
+const LINHAS=[['TEMPO PARA MATAR',m=>DADOS.weapons[ARMA].class==='shotgun'||FICHA.rof==null||m.modeChanged?null:(m.time?.[0]??null),0,' ms',true],['FIRE MODES',m=>m.fireModes,0,'',false,true],['RELOAD TIME',m=>m.reload,3,' s',true,true],['MUZZLE VELOCITY',m=>m.speed,0,' m/s',false],['ADS TIME IN',m=>m.ads,0,' ms',true],['HEADSHOT MULTIPLIER',m=>m.headMultiplier,2,'×',false,true],['RECOIL AMOUNT',m=>m.recoil,2,'°',true],['RECOIL VARIATION',m=>m.random,1,'°',true,true],['ADS SPREAD',m=>m.spread,3,'°',true,true],['3D SPOT-ON-FIRE RANGE',m=>m.spotWorld,0,' m',true,true],['2D SPOT-ON-FIRE RANGE',m=>m.spotMap,0,' m',true,true],['OPPONENT HEALTH REGEN DELAY',m=>m.regen,1,' s',false,true],['COLLATERAL MULTIPLIER',m=>m.collateral,2,'×',false,true],['RELOAD IN ADS',m=>m.reloadADS,0,'',false,true],['ADS MOVE SPEED MULTIPLIER',m=>m.move,2,'×',false,true],['SPRINT RECOVERY',m=>m.sprint,0,' ms',true,true]];
+
+function painel(mostra,compara){
+ const calc=ids=>ArmaPainel(DADOS,ids,motor.calc(ARMA,ids,false));
+ const m=calc(mostra),c=compara?calc(compara):null;
+ $('topo').innerHTML=`<div><small>DMG</small><strong>${FICHA.dmg==null||m.modeChanged||arma.class==='shotgun'?'não sei':Math.floor(FICHA.dmg)}</strong></div><div><small>ROF</small><strong>${FICHA.rof==null||m.modeChanged?'não sei':Math.round(FICHA.rof)}</strong></div><div><small>MAG</small><strong>${m.capacity??'não sei'}</strong></div>`;
+ $('linhasPainel').innerHTML=['HIPFIRE','PRECISION','CONTROL','MOBILITY'].map(rotulo=>{const n=m.panel?.[rotulo.toLowerCase()];return `<div class="barra${n==null?' desconhecida':''}"><span>${rotulo}</span><b>${n??'não sei'}</b>${n==null?'':`<i style="--nota:${n}%"></i>`}</div>`;}).join('')+LINHAS.map(([rotulo,ler,casas,unidade,menor,extra])=>{
+  const v=ler(m),a=c?ler(c):null;
+  const classe=c&&v!=null&&a!=null&&Math.abs(v-a)>1e-9?((v<a)===menor?'melhor':'pior'):'';
+  return `<div class="lin ${classe}${extra?' extra':''}"><span>${rotulo}</span><b>${v==null?'não sei':typeof v==='string'?v:unidade==='×'?'×'+v.toFixed(casas).replace('.',','):v.toFixed(casas).replace('.',',')+unidade}</b></div>`;
+ }).join('')+`<div class="lin extra"><span>LONG RANGE DAMAGE</span><b>${FICHA.longe==null||m.modeChanged||arma.class==='shotgun'?'não sei':Math.floor(FICHA.longe)}</b></div>`;
+}
+// O jogo mostra os dados inteiros na seleção de peça; na tela da arma, a tecla C alterna.
+function ajustarPainel(){$('painel').classList.toggle('expandido',expandido||!!aberto);}
+function desenhar(){
+ const total=pontos();
+ $('total').textContent=total+'/100';
+ $('pips').innerHTML=Array.from({length:10},(_,i)=>`<i class="${i*10<total?'cheio':''}"></i>`).join('');
+ const visiveis=Object.entries(ENCAIXES).filter(([s])=>porEncaixe[s]);
+ const limpo=aberto||expandido;
+ $('linhas').innerHTML=limpo?'':visiveis.map(([s,e])=>`<line x1="${e.pos[0]}" y1="${e.pos[1]}" x2="${e.alvo[0]}" y2="${e.alvo[1]}"/>`).join('');
+ $('pecas').innerHTML=limpo?'':visiveis.map(([s,e])=>{
+  const id=montagem[s],est=`left:${pct(e.pos[0],2000)};top:${pct(e.pos[1],1125)}`;
+  return id?`<button class="peca" style="${est}" data-s="${s}"><span class="custo">${pecaDe(id).cost}</span>${marcaFabrica(id)}${icone(pecaDe(id))}<span class="nome">${pecaDe(id).name}</span></button>`
+   :`<button class="peca vazia" style="${est}" data-s="${s}"><b>+</b><span>${e.rotulo}</span></button>`;
+ }).join('');
+ document.querySelectorAll('#pecas button').forEach(b=>b.onclick=()=>abrir(b.dataset.s));
+ $('titulo').textContent=inspecao?'INSPECT '+arma.name:aberto?'SELECT '+ENCAIXES[aberto].rotulo:'CUSTOMIZE '+arma.name;
+ const igualFabrica=DADOS.factory?.provada&&ids().length===fabricaMontagem.size&&ids().every(id=>fabricaMontagem.has(id));
+ $('nomeMontagem').style.display=!aberto&&!inspecao&&igualFabrica?'block':'none';
+ $('reset').style.display=aberto?'none':'block';
+ $('voltar').style.visibility=aberto||inspecao?'visible':'hidden';
+ $('grade').style.display=aberto?'grid':'none';
+ $('detalhe').style.display=aberto?'block':'none';
+ $('inspecionar').style.display=aberto?'none':'block';
+ $('palco').classList.toggle('inspecao',inspecao);
+ ajustarPainel();
+ renderer.assemble(ids());
+ if(aberto){grade();mostrarPeca(montagem[aberto]??null);}
+}
+// Como no jogo: ao escolher um encaixe, a câmera se aproxima dele.
+function camera(){
+ const [cx,cy]=renderer.centro,{yaw,pitch}=renderer.inicial;
+ if(inspecao)return renderer.camera({z:2.2,ox:0,oy:0,yaw,pitch});
+ // Ordem do dono: no jogo os dados cobrem a arma; aqui ela vai à esquerda, em ângulo, e os dados ficam livres.
+ // Posição medida no print dele: a boca do cano vem para o usuário; yaw e pitch positivos dão a mesma sombra, mas apontam para o outro lado.
+ if(!aberto&&expandido){
+  const alvo={z:2.242,ox:2.242*cx-.74,oy:2.242*cy-.626,yaw:yaw-.83,pitch:pitch-.24};
+  if(ARMA==='carbine/m4a1')return renderer.camera(alvo,450);
+  const tela=document.getElementById('arma').getBoundingClientRect(),painel=document.getElementById('painel').getBoundingClientRect(),margem=4;
+  const retangulo={min:[-1+2*margem/tela.width,-1+2*margem/tela.height],max:[2*(painel.left-tela.left-margem)/tela.width-1,1-2*margem/tela.height]};
+  return renderer.camera(renderer.enquadrarPainel(alvo,retangulo),450);
+ }
+ if(!aberto)return renderer.camera({z:1,ox:cx,oy:cy,yaw,pitch},450);
+ const [x,y]=ENCAIXES[aberto].alvo,z=2.2,clip=(a,b)=>[a/1000-1,1-b/562.5],[ax,ay]=clip(x,y),[tx,ty]=clip(1050,300);
+ renderer.camera({z,ox:tx-z*(ax-cx),oy:ty-z*(ay-cy),yaw,pitch});
+}
+function grade(){
+ const atual=montagem[aberto]??null,resto=pontos()-(atual?pecaDe(atual).cost:0);
+ const cartoes=(arma.required.includes(aberto)?[]:[null]).concat(porEncaixe[aberto]);
+ const rolagem=$('grade').scrollTop;
+ $('grade').innerHTML=cartoes.map(id=>{
+  const p=id&&pecaDe(id),cara=p&&resto+p.cost>100;
+  return `<button class="opcao${id===atual?' montada':''}${cara?' cara':''}" data-id="${id??''}"><span class="custo">${p?p.cost:0}</span>${marcaFabrica(id)}${icone(p)}<span class="nome">${p?p.name:'NONE'}</span></button>`;
+ }).join('');
+ $('grade').scrollTop=rolagem;
+ document.querySelectorAll('.opcao').forEach(b=>{
+  const id=b.dataset.id||null;
+  b.onclick=()=>trocar(id);
+  b.onmouseenter=b.onfocus=()=>previa(id);
+  b.onmouseleave=b.onblur=()=>{mostrarPeca(montagem[aberto]??null);painel(ids());renderer.assemble(ids());};
+ });
+}
+function comPeca(id){const nova={...montagem};if(id)nova[aberto]=id;else delete nova[aberto];return nova;}
+function mostrarPeca(id){
+ const p=id&&pecaDe(id),montada=id===(montagem[aberto]??null);
+ $('dnome').textContent=p?p.name:'None';
+ $('defaultDetalhe').style.display=eFabrica(id)?'block':'none';
+ $('dtexto').textContent=p?p.description:'';
+ $('estado').textContent=montada?'✓ EQUIPPED':'EQUIP';
+ $('estado').className=montada?'montada':'';
+}
+// Passar o mouse mostra o que a peça faria, em verde ou vermelho, antes de montar.
+function previa(id){
+ mostrarPeca(id);
+ const nova=comPeca(id);
+ if(pontos(nova)<=100){painel(ids(nova),ids());renderer.assemble(ids(nova));}
+}
+function abrir(s){aberto=s;$('aviso').textContent='';painel(ids());desenhar();camera();}
+function inspecionar(ligar){inspecao=ligar;if(ligar)aberto=null;$('aviso').textContent='';desenhar();camera();}
+function trocar(id){
+ const nova=comPeca(id);
+ if(pontos(nova)>100){$('aviso').textContent=`Passa de 100: daria ${pontos(nova)} pontos.`;return;}
+ $('aviso').textContent='';
+ montagem=nova;
+ gravarMontagem();
+ painel(ids());
+ desenhar();
+}
+function voltarAFabrica(){montagem={...montagemInicial};gravarMontagem();painel(ids());desenhar();}
+$('reset').onclick=voltarAFabrica;
+const voltar=()=>inspecao?inspecionar(false):abrir(null);
+$('voltar').onclick=voltar;
+$('inspecionar').onclick=()=>inspecionar(true);
+addEventListener('keydown',e=>{
+ if(e.key==='Escape')expandido&&!aberto&&!inspecao?alternarPainel():voltar();
+ else if(e.key.toLowerCase()==='i'&&!aberto)inspecionar(!inspecao);
+ else if(e.key.toLowerCase()==='c'&&!aberto&&!inspecao)alternarPainel();
+ else if(e.key.toLowerCase()==='x'&&!aberto&&!inspecao)voltarAFabrica();
+});
+function alternarPainel(){expandido=!expandido;desenhar();camera();}
+$('botaoC').onclick=alternarPainel;
+window.ars22Mount=parts=>{
+ motor.validate(ARMA,parts);
+ montagem=Object.fromEntries(parts.map(id=>[pecaDe(id).slot,id]));
+ aberto=null;inspecao=false;expandido=false;
+ gravarMontagem();painel(ids());desenhar();camera();
+};
+const img=$('arma');
+img.style.left='0';img.style.top='0';img.style.width='100%';img.style.height='100%';
+$('carregando').remove();
+painel(ids());desenhar();
+window.ars22AfterStart?.();
+}
+(async()=>{try{
+ const query=new URLSearchParams(location.search),key=query.get('arma')||'carbine/m4a1',entry=ARS20_INDEX[key];if(!entry)throw Error('Arma indisponível');
+ const selector=document.getElementById('seletorArma');selector.innerHTML=[...new Set(Object.keys(ARS20_INDEX).map(k=>k.split('/')[0]))].sort().map(t=>`<optgroup label="${({"assaultrifle":"ASSAULT RIFLES","boltaction":"SNIPER RIFLES","carbine":"CARBINES","dmr":"DMR","mg":"MACHINE GUNS","secondary":"SIDEARMS","shotgun":"SHOTGUNS","smg":"SMG"})[t]??t}">`+Object.values(ARS20_INDEX).filter(w=>w.pronta&&w.id.startsWith(t+'/')).sort((a,b)=>a.name.localeCompare(b.name)).map(w=>`<option value="${w.id}">${w.name}</option>`).join('')+'</optgroup>').join('');selector.value=key;selector.onchange=()=>location.search='?arma='+encodeURIComponent(selector.value);document.getElementById('arma').setAttribute('aria-label','Modelo 3D de '+entry.name+'; arraste para girar');
+ const load=id=>new Promise((resolve,reject)=>{if(!/^[a-f0-9]{64}$/.test(id))return reject(Error('Asset inválido'));if(ARS20_A[id])return resolve();const s=document.createElement('script');s.src='modelos/compartilhados/arma-asset-'+id+'.js';s.onload=()=>{s.remove();resolve();};s.onerror=()=>reject(Error('Asset '+id));document.head.append(s);});
+ await load(entry.payload);const p=ARS20_A[entry.payload];ARMA=p.weapon;DADOS=p.data;INICIAL=p.initial;FICHA=p.ficha;CONFIG3D=p.config;
+ const assets=[...new Set([...Object.values(p.models),...Object.values(p.textures),...Object.values(p.icons||{})])];for(let i=0;i<assets.length;i+=4)await Promise.all(assets.slice(i,i+4).map(load));
+ for(const [id,asset] of Object.entries(p.icons||{}))DADOS.parts[id].icon=ARS20_A[asset];
+ MODELOS=Object.fromEntries(Object.entries(p.models).map(([id,asset])=>[id,ARS20_A[asset]]));TEXTURAS=Object.fromEntries(Object.entries(p.textures).map(([id,asset])=>[id,ARS20_A[asset]]));if(ARS28_CATALOG[ARMA]){await ArmaSkins21.prepare(ARMA,MODELOS,CONFIG3D,TEXTURAS);iniciar();ArmaSkins21.mount();}else iniciar();
+ }catch(e){window.ars20Error=String(e);document.getElementById('carregando').textContent='Não consegui carregar a arma.';throw e;}})();
+</script><script>/* Giro e toque (dono, 31/10): a arma segue a mão, como quem a pega, no mouse e no dedo; um dedo gira, dois dedos
+   aproximam e movem, e a página fica parada. O botão direito do mouse continua em arma_webgl.js.
+   Fica em arquivo próprio porque só muda a entrada, não o desenho: arma_webgl.js e arma_pagina.html entram na
+   assinatura que certifica cada arma. */
+(function(){
+ const estilo=document.createElement('style');
+ estilo.textContent='html,body{overscroll-behavior:none}#palco{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}#grade,#gradeCamos21{touch-action:pan-y}';
+ document.head.append(estilo);
+ // No Safari, a pinça da página é um gesto próprio: sem isto, a página aproxima junto.
+ for(const nome of ['gesturestart','gesturechange','gestureend'])document.addEventListener(nome,e=>e.preventDefault(),{passive:false});
+ const tela=()=>document.getElementById('arma');
+ function girar(c,dx,dy){window.renderer.rotate(c.yaw-dx*.008,Math.max(-1.4,Math.min(1.4,c.pitch-dy*.008)));}
+
+ // Mouse: só o botão esquerdo; o dedo o Safari não entrega por aqui, e também não pode cair no giro antigo.
+ let mouse=null;
+ document.addEventListener('pointerdown',e=>{
+  if(e.target!==tela()||!window.renderer)return;
+  if(e.pointerType==='touch'){e.stopPropagation();return;}
+  if(e.button!==0)return;
+  e.stopPropagation();mouse={x:e.clientX,y:e.clientY,cam:window.renderer.camara};tela().setPointerCapture(e.pointerId);
+ },true);
+ document.addEventListener('pointermove',e=>{
+  if(e.pointerType==='touch'){if(e.target===tela())e.stopPropagation();return;}
+  if(!mouse)return;
+  e.stopPropagation();girar(mouse.cam,e.clientX-mouse.x,e.clientY-mouse.y);
+ },true);
+ for(const nome of ['pointerup','pointercancel'])document.addEventListener(nome,e=>{
+  if(e.pointerType==='touch'){if(e.target===tela())e.stopPropagation();return;}
+  if(mouse){e.stopPropagation();mouse=null;}
+ },true);
+
+ // Dedo: por TouchEvent, porque o Safari entrega os Pointer Events um por dedo e cancela a sequência na pinça.
+ let base=null;
+ const ponto=t=>({x:t.clientX,y:t.clientY});
+ const meio=(a,b)=>({x:(a.x+b.x)/2,y:(a.y+b.y)/2});
+ const distancia=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y)||1;
+ function recorte(p){const r=tela().getBoundingClientRect();return {x:(p.x-r.left)*2/r.width-1,y:1-(p.y-r.top)*2/r.height};}
+ function recomeca(lista){
+  const p=[...lista].slice(0,2).map(ponto);
+  base=p.length&&window.renderer?{cam:window.renderer.camara,p}:null;
+  if(base&&p.length>1){base.d=distancia(p[0],p[1]);base.m=recorte(meio(p[0],p[1]));}
+ }
+ document.addEventListener('touchstart',e=>{
+  if(e.target!==tela())return;
+  e.preventDefault();recomeca(e.touches);
+ },{passive:false});
+ document.addEventListener('touchmove',e=>{
+  if(e.touches.length>1)e.preventDefault();
+  if(e.target!==tela()||!base)return;
+  e.preventDefault();
+  const p=[...e.touches].slice(0,2).map(ponto),c=base.cam;
+  if(p.length!==base.p.length)return recomeca(e.touches);
+  if(p.length===1)return girar(c,p[0].x-base.p[0].x,p[0].y-base.p[0].y);
+  // O ponto entre os dedos fica preso à arma: aproximar e mover são o mesmo gesto, como numa foto.
+  const z=Math.max(.6,Math.min(6,c.z*distancia(p[0],p[1])/base.d)),k=z/c.z,m=recorte(meio(p[0],p[1]));
+  window.renderer.camera({z,ox:m.x+(c.ox-base.m.x)*k,oy:m.y+(c.oy-base.m.y)*k},0);
+ },{passive:false});
+ for(const nome of ['touchend','touchcancel'])document.addEventListener(nome,e=>{
+  if(e.target===tela())recomeca(e.touches);
+ },{passive:false});
+})();
+</script><script>/* ARS22 INTEGRADO */
+/* Seleção sobre o índice pronto; mesmas relações físicas da ARS-17. */
+(function(root){
+'use strict';
+const compare=(a,b)=>{for(let i=0;i<a.length;i++){if(a[i]===b[i])continue;if(a[i]===null)return 1;if(b[i]===null)return -1;return a[i]-b[i];}return 0;};
+const dominates=(a,b)=>!a.some((v,i)=>(v===null)!==(b[i]===null))&&a.every((v,i)=>v===null||v<=b[i])&&a.some((v,i)=>v!==null&&v<b[i]);
+const buckets=[[0,1,2,3],[3,4,5],[6,7,8,9]];
+function bands(time){return buckets.map(ii=>ii.every(i=>time?.[i]!=null)?Math.max(...ii.map(i=>time[i])):null);}
+function vector(build,focus,distance,map){if(focus!=='ttk')return build.v[focus];const t=bands(build.time);if(map&&!map.manual){const weights=[map.perto_pct,map.media_pct,map.longa_pct].map(Number);return [t.some((v,i)=>v==null&&weights[i]>0)?null:t.reduce((a,b,i)=>a+(b??0)*weights[i],0)/weights.reduce((a,b)=>a+b,0)];}return [t[distance]??null];}
+function recommend(index,{focus='precisao',distance=0,map='',type='',weapon=''}={}){
+ const chosen=index.maps.find(m=>m.codinome===map),rows=[];
+ for(const [key,w] of Object.entries(index.weapons)){
+  if(weapon&&weapon!==key||type&&w.type!==type)continue;
+  const scenario=chosen&&!chosen.manual?chosen.codinome:'dist'+distance,ids=w.choices[focus==='ttk'?'ttk:'+scenario:focus]??[];
+  for(const id of ids){const b=w.builds[id],v=vector(b,focus,distance,chosen);if(v.every(x=>x===null))continue;rows.push({weapon:key,id,build:b,v,name:w.name});}
+ }
+ let pool=rows;
+ if(['precisao','furtividade'].includes(focus))pool=rows.filter(a=>!rows.some(b=>dominates(b.v,a.v)));
+ pool.sort((a,b)=>(['precisao','furtividade'].includes(focus)?0:compare(a.v,b.v))||a.build.cost-b.build.cost||a.weapon.localeCompare(b.weapon)||a.id-b.id);
+ const out=[];for(const r of pool){let group=out.find(g=>g.weapon===r.weapon);if(!group){if(out.length===3)continue;group={weapon:r.weapon,name:r.name,builds:[]};out.push(group);}if(group.builds.length<3&&!group.builds.some(x=>compare(x.v,r.v)===0))group.builds.push(r);}
+ return out;
+}
+const api={compare,dominates,bands,vector,recommend};root.Arma22=api;if(typeof module!=='undefined')module.exports=api;
+if(typeof document==='undefined')return;
+const $=id=>document.getElementById(id);let index=null,pending=null,scope='',last=[],focusReturn=null;
+const number=(n,d=2)=>n==null?'não sei':n.toLocaleString('pt-BR',{maximumFractionDigits:d});
+const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function load(){if(index)return index;if(pending)return pending;pending=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='arma-indice22.js';s.onload=()=>{index=window.ARS22_INDEX;s.remove();resolve(index);};s.onerror=()=>{pending=null;s.remove();reject(Error('Não carregou. Tente abrir “Qual arma?” novamente.'));};document.head.append(s);});return pending;}
+function settings(){return {focus:$('qualPrioridade').value,distance:Number($('qualDistancia').value),map:$('qualMapa').value,type:$('qualTipo').value,weapon:scope};}
+function reason(r,opts){const v=r.v;let text;
+ if(opts.focus==='controle')text=`Coice ${number(v[0],3)}°/tiro · variação ${number(v[1])}°`;
+ else if(opts.focus==='mobilidade')text=`Mira ${number(v[0],0)} ms · coice ${number(v[1],3)}°/tiro`;
+ else if(opts.focus==='precisao')text=`Dispersão ${number(v[0],3)}°/tiro · em movimento ${number(v[1],3)}°/tiro · sem mirar ${number(v[2],3)}° · ${number(v[3]==null?null:-v[3],0)} m/s`;
+ else if(opts.focus==='furtividade')text=`Aviso no mundo ${number(v[0],0)} m · minimapa ${number(v[1],0)} m`;
+ else text=`TTK no peito ${number(v[0],0)} ms`;
+ const map=index.maps.find(m=>m.codinome===opts.map);if(map&&!map.manual)text+=` · visadas ${map.perto_pct}% perto / ${map.media_pct}% média / ${map.longa_pct}% longa`;
+ return text+'.';}
+function refresh(){if(!index)return;const opts=settings(),map=index.maps.find(m=>m.codinome===opts.map),automatic=map&&!map.manual;
+ $('qualDistancia').disabled=!!automatic;$('qualDistanciaLabel').hidden=!!automatic;
+ $('qualMapaAviso').textContent=map?.manual?'Só superfície; subsolo sem medida. Escolha a distância.':'';
+ last=recommend(index,opts);let n=0;
+ $('qualRespostas').innerHTML=last.length?last.map(g=>`<section class="qualArma"><h3>${escape(g.name)}</h3>${g.builds.map(r=>`<div class="qualMontagem"><p>${escape(reason(r,opts))}</p><button class="qualMontar" data-result="${n++}">Montar · ${r.build.cost}/100</button></div>`).join('')}</section>`).join(''):'<p class="qualVazio">Não sei uma montagem comprovada para esta escolha.</p>';
+ $('qualRespostas').querySelectorAll('button').forEach(b=>b.onclick=()=>mount(last.flatMap(g=>g.builds)[Number(b.dataset.result)]));
+}
+function close(){$('qualPainel').hidden=true;$('qualBotao').setAttribute('aria-expanded','false');focusReturn?.focus();}
+async function open(){focusReturn=document.activeElement;$('qualPainel').hidden=false;$('qualBotao').setAttribute('aria-expanded','true');$('qualFechar').focus();$('qualRespostas').textContent='Consultando montagens…';try{await load();
+ if(!$('qualMapa').options.length){$('qualMapa').innerHTML='<option value="">Sem mapa</option>'+index.maps.map(m=>`<option value="${escape(m.codinome)}">${escape(m.name)}${m.manual?' · só superfície':''}</option>`).join('');$('qualTipo').innerHTML='<option value="">Todos</option>'+index.classes.map(t=>`<option value="${escape(t)}">${escape(index.classNames?.[t]??t)}</option>`).join('');}
+ scope='';$('qualTodas').setAttribute('aria-pressed','true');$('qualAtual').setAttribute('aria-pressed','false');$('qualAtual').textContent=DADOS.weapons[ARMA].name;refresh();
+ }catch(e){$('qualRespostas').textContent=e.message;}}
+function mount(r){const w=index.weapons[r.weapon],parts=r.build.p.map(n=>w.parts[n]);
+ if(r.weapon===ARMA){window.ars22Mount(parts);close();}
+ else {const q=new URLSearchParams(location.search);q.set('arma',r.weapon);q.set('ars22',r.id);location.search=q.toString();}
+}
+const css=document.createElement('style');css.textContent=`
+ #qualBotao{position:absolute;right:3.4cqw;bottom:1.6cqw;padding:.5cqw 1cqw;background:#10181ce6;border:1px solid #ffffff80;color:var(--texto);font:inherit;font-size:1.4cqw;cursor:pointer}
+ #palco.inspecao #qualBotao{display:none}
+ #qualPainel[hidden]{display:none!important}
+ #qualPainel{position:absolute;z-index:20;right:2.5cqw;top:3cqw;bottom:5.5cqw;width:45cqw;overflow:auto;background:#0c1a20fa;border:1px solid #819da5;padding:1.5cqw;font-size:1.05cqw;scrollbar-color:#8fa3a9 #102932;color:var(--texto);box-shadow:-.5cqw .7cqw 1.6cqw #0006}
+ #qualPainel header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1cqw}#qualPainel h2{font-size:2cqw;font-weight:400;margin:0}#qualPainel h3{font-size:1.5cqw;font-weight:500;margin:1.4cqw 0 .4cqw}
+ #qualPainel button,#qualPainel select{font:inherit;color:var(--texto);background:#142f38;border:1px solid #8fa3a9;padding:.5cqw;cursor:pointer}#qualPainel button:hover,#qualPainel select:hover,#qualBotao:hover{border-color:#fff;background:#244954}#qualPainel :focus-visible,#qualBotao:focus-visible{outline:2px solid #a6e8a2;outline-offset:2px}
+ #qualPainel [aria-pressed=true]{border-color:#a6e8a2;color:#b8f2b4}#qualEscopo{display:flex;gap:.6cqw;margin-bottom:1.2cqw}#qualCampos{display:grid;grid-template-columns:1fr 1fr;gap:.8cqw}#qualCampos label{display:flex;flex-direction:column;gap:.35cqw}#qualCampos label[hidden]{display:none}#qualCampos select{width:100%;min-width:0}#qualMapaAviso{color:#f2cf99;line-height:1.35;margin:.6cqw 0 0}#qualMapaAviso:empty{display:none}
+ .qualMontagem{display:flex;align-items:center;gap:1cqw;padding:.65cqw 0;border-bottom:1px solid #ffffff26}.qualMontagem p{flex:1;line-height:1.4;margin:0;font-variant-numeric:tabular-nums}.qualMontar{white-space:nowrap}.qualVazio{line-height:1.4}#qualPainel ::selection{background:#b8f2b4;color:#071317}
+ @media(max-width:700px){#qualPainel{position:fixed;inset:8px;width:auto;font-size:16px;padding:16px;max-height:calc(100dvh - 16px)}#qualPainel h2{font-size:24px}#qualPainel h3{font-size:21px;margin-top:20px}#qualPainel button,#qualPainel select{padding:9px;font-size:16px;min-height:44px}#qualCampos{gap:12px}#qualCampos label{gap:6px}#qualEscopo{gap:8px;margin-bottom:16px}.qualMontagem{gap:12px;padding:12px 0;flex-wrap:wrap}.qualMontagem p{min-width:190px}#qualBotao{font-size:14px;min-height:32px;padding:4px 8px;bottom:4px;right:8px}}
+ @media(prefers-reduced-motion:reduce){#qualPainel{scroll-behavior:auto}}
+ `;document.head.append(css);
+ $('palco').insertAdjacentHTML('beforeend',`<button id="qualBotao" aria-expanded="false" aria-controls="qualPainel">Qual arma?</button><aside id="qualPainel" aria-labelledby="qualTitulo" hidden><header><h2 id="qualTitulo">Qual arma?</h2><button id="qualFechar" aria-label="Fechar recomendações">Fechar</button></header><div id="qualEscopo"><button id="qualTodas" aria-pressed="true">Todas as armas</button><button id="qualAtual" aria-pressed="false">Esta arma</button></div><div id="qualCampos"><label>Prioridade<select id="qualPrioridade"><option value="precisao">Precisão</option><option value="controle">Controle</option><option value="mobilidade">Mobilidade</option><option value="furtividade">Furtividade</option><option value="ttk">Tempo para matar</option></select></label><label>Tipo<select id="qualTipo" aria-label="Tipo de arma"></select></label><label id="qualDistanciaLabel">Distância<select id="qualDistancia"><option value="0">Perto · &lt;25 m</option><option value="1">Média · 25–75 m</option><option value="2">Longa · &gt;75 m</option></select></label><label>Mapa (visadas)<select id="qualMapa"></select></label></div><p id="qualMapaAviso" role="status"></p><div id="qualRespostas" aria-live="polite"></div></aside>`);
+ $('qualBotao').onclick=open;$('qualFechar').onclick=close;
+ for(const id of ['qualPrioridade','qualDistancia','qualMapa','qualTipo'])$(id).onchange=refresh;
+ for(const [id,value] of [['qualTodas',''],['qualAtual',null]])$(id).onclick=()=>{scope=value===null?ARMA:'';$('qualTodas').setAttribute('aria-pressed',String(!scope));$('qualAtual').setAttribute('aria-pressed',String(!!scope));refresh();};
+ addEventListener('keydown',e=>{if(!$('qualPainel').hidden){if(e.key==='Escape'){e.stopImmediatePropagation();close();}else if(e.key!=='Tab')e.stopImmediatePropagation();}},true);
+ root.ars22AfterStart=async()=>{const q=new URLSearchParams(location.search);if(!q.has('ars22'))return;try{await load();const w=index.weapons[ARMA],n=Number(q.get('ars22'));if(!Number.isInteger(n)||!w?.builds[n])throw Error('Montagem indisponível. Abra “Qual arma?” novamente.');window.ars22Mount(w.builds[n].p.map(i=>w.parts[i]));q.delete('ars22');history.replaceState(null,'',location.pathname+(q.size?'?'+q:''));}catch(e){$('aviso').textContent=e.message;}};
+ if(root.ars22Mount)root.ars22AfterStart();
+})(typeof globalThis!=='undefined'?globalThis:this);
+</script></body></html>
